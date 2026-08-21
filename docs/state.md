@@ -8,6 +8,94 @@ interim review. This is the single "where things stand + what's next" file —
 update it at the end of every session. Reference facts live in aws / hardware /
 detection / dashboard; frozen history lives in `docs/history/`._
 
+**2026-08-21 - ORIN SYNC DONE (7 files) + THREE BLOCKERS FOUND ON THE DOG.**
+
+Laptop reached the Orin over the WIRED dog net (`192.168.123.18`, laptop
+`192.168.123.50`) after Runzhe registered the laptop's public key. Everything
+below was read off the live machine.
+
+- **PUSHED and verified byte-identical** (sha256 compared before and after):
+  `go2_console.py` + `run_go2_console.sh` -> `~/go2/` (both new),
+  `patrol_scheduler.py` -> `~/go2/` and `run_patrol_scheduler.sh` -> `~/`
+  (**never deployed before - the scheduler built 2026-08-20 was not on the dog
+  at all**), plus `go2_patrol_gated.py`, `kvs_controller.py`, `setup_go2.sh`.
+  `run_kvs_controller.sh` already matched. Smoke test: `go2_console.py --help`
+  runs on the Orin, so rclpy/cv2/boto3 all import there.
+- Source of truth for the push was **git HEAD, not the working tree** - the
+  public-release cleanup has files deleted from disk but still tracked.
+- **The real drift was tiny, but it was the migration.** Ignoring CRLF, the
+  deployed `go2_patrol_gated.py` differed from the repo in exactly 2 lines
+  (`S3_FRAMES_BUCKET`), and `kvs_controller.py` in 2 (API base + camera id).
+  Everything else - Jewel waypoints, INITIAL_POSE, countdown, gate timeout -
+  was already identical, so nothing validated was overwritten.
+
+**BLOCKER 1 - THE ORIN WAS NEVER MIGRATED TO THE PRODUCTION ACCOUNT. FIXED
+2026-08-21.** `~/.aws` held `cag_user` on the RETIRED account `366356442579`,
+and a HeadBucket on `argus-frames-506868652945` returned **403 Forbidden** -
+so every upload would have failed and no photo would have reached the
+dashboard. Before this push the deployed code still pointed at the dead
+`frames-armyworm-366356442579` bucket and API `zwpcbivmsj`; this had been
+broken since the 2026-08-10 migration and nobody had hit it.
+- Fix: new IAM user **`orin-go2`** in the production account (Runzhe's call).
+  There was nothing to reuse - prod holds only five human users
+  (Operation_G1/G2, Research_G1, Staff_NeoBoonKee, Student_QianRunzhe) and no
+  service identity, and `cag_user` lives in a different account that is being
+  wound down. The alternative was putting Runzhe's own key on a robot that is
+  being handed to someone else.
+- Inline policy `orin-go2-uploader`, deliberately narrow: `s3:PutObject` on
+  `frames/demo_cam/*` and `frames/worm_cam/*` only, plus `dynamodb:Query` on
+  `pest-monitoring-detections` (the gated patrol's completion gate). **Verified
+  both ways** - a PutObject to `frames/demo_cam/` succeeds from the Orin, and
+  `frames/moth_cam/*` and `training-data/*` both return AccessDenied.
+- Key installed to `~/.aws/credentials` (mode 600) as the default profile,
+  replacing the retired account's. The Orin now answers
+  `arn:aws:iam::506868652945:user/orin-go2`. No KVS permissions were granted -
+  `worm_cam.stream_enabled` is false, so live view from the dog needs a
+  separate decision.
+- The self-test object and its DynamoDB record were deleted afterwards; the
+  earlier `frames/demo_cam/selftest/...` frame (a real photo) is still there.
+
+**BLOCKER 2 - mDNS CANNOT SOLVE REMOTE SSH ON CAMPUS WIFI.** Measured, not
+assumed: avahi is active and publishing `ubuntu.local` on both eth1 and wlan0,
+and `ssh unitree@ubuntu.local` works over the dog net. A raw mDNS query sent
+from the laptop's campus-WiFi interface got **no answer at all**, because the
+laptop sits in `10.1.40.0/21` and the dog in `10.1.120.0/21` - mDNS is
+link-local multicast and does not cross subnets. Facts for the fix:
+wlan0 MAC **`00:2e:2d:ad:3c:8d`**, current lease `10.1.122.235/21`, NM profile
+`npwireless`, hostname is the generic `ubuntu`. Real options: a DHCP
+reservation from NP IT on that MAC (permanent, Mr Ong can file it), or an IP
+self-report beacon from the dog. Renaming the host off `ubuntu` is worth doing
+either way and needs sudo.
+
+**BLOCKER 3 - A8 GIMBAL: RESOLVED BY A REBOOT, NOT A CABLE.** Before the
+reboot `eth0` was absent from `ip link` entirely and the Orin's USB bus listed
+only the 802.11ac WiFi dongle - the ASIX adapter was physically attached but
+had not enumerated. Runzhe rebooted the dog; `eth0` came up on
+`192.168.144.30/24` and `192.168.144.25` answers (0% loss, ARP REACHABLE,
+lladdr `7c:23:76:06:16:06`). **If eth0 is missing again, reboot before
+suspecting the cable.**
+- Watch out: the LAPTOP's ASIX adapter also carries a static `192.168.144.30`,
+  the same address as the Orin's eth0. They are on separate physical segments
+  today so nothing clashes, but it is a latent duplicate-IP trap and it is what
+  made the first diagnosis wrong. Worth removing from the laptop.
+
+**FULL CHAIN VERIFIED END TO END ON REAL HARDWARE, 2026-08-21 15:28 SGT.**
+Using `go2_console.py`'s OWN functions on the Orin, not a reimplementation:
+`capture_frame()` pulled a live 1920x1080 frame off the A8 RTSP stream
+(295,837 byte JPEG), `upload_frame()` PUT it to
+`frames/demo_cam/linktest/20260821T072849_446609.jpg` as `orin-go2`, and the
+passthrough Lambda wrote the record 9 s later - `camera_id=demo_cam`,
+`waypoint_id=linktest`, `source=navigation-capture`, `target_detected=false`.
+That photo is in the dashboard gallery now. Nothing is left unproven between
+the gimbal and the dashboard; the only untested piece is navigation itself,
+which needs a recorded map.
+
+- Also noted: `sudo` on the Orin needs a password, so systemd unit installs
+  (`patrol-scheduler.service`) and the hostname change are Runzhe's to run.
+- `pose.py`, `get_map_id.py`, `nav_probe.py`, `uslam_reset.py` were pruned out
+  of git HEAD by the release cleanup. They still live on the Orin and were left
+  untouched; `capture_4k_hdmi.py` is in neither place any more.
+
 **2026-08-21 - HANDOVER NAVIGATION FLOW BUILT (for Mr Ong Wei Kok). One
 all-in-one robot script with a local map-profile table, plus a passthrough
 camera. CODE DONE, TWO CLOUD WRITES STILL PENDING.**
@@ -73,6 +161,27 @@ camera. CODE DONE, TWO CLOUD WRITES STILL PENDING.**
   items if the flow is actually given away.
 - Next step agreed with Runzhe: record a map in the app, then run
   `go2_console.py` once end to end on the real dog.
+
+**2026-08-21 (post-release) - MISSING LAMBDA MIRROR ADDED: `kvs-hls-handler`.**
+
+- Runzhe spotted it: `deployer/deploy.py` creates FIVE Lambdas (lines 79-86)
+  but `lambda/` held only four. `kvs-hls-handler` existed solely as the
+  as-deployed artifact under `deployer/audit/kvs-hls-handler_src/`, while
+  `pest-model-watchdog` had both a `lambda/` mirror and an audit copy - so the
+  convention was already there and this one function had fallen through it.
+- Mirrored to `lambda/kvs-hls-handler.py`. Verified: everything below the
+  docstring is byte-identical to the deployed artifact.
+- **One correction made in the mirror.** The original docstring names API
+  Gateway `zwpcbivmsj`, which is the RETIRED development account's gateway.
+  Copied verbatim it reads as current. The mirror now records the real status:
+  the function was built and validated on the dev account, and production
+  `506868652945` was deployed WITHOUT `--live-view`, so it has no KVS streams
+  and the Live tab has nothing to play there yet.
+- `docs/architecture.md` now states the invariant plainly: five Lambdas, five
+  files, and adding one to the deployer means adding its mirror. A missing
+  mirror hides until someone needs to read the code.
+- Checked the rest: both `deployer/audit/*_src/` sources are now mirrored, and
+  nothing else the deployer creates is unmirrored.
 
 **2026-08-21 (release, final) - REPO CUT TO 242 FILES / 155 MB, SINGLE
 COMMIT. Everything not code, report, manual or agent docs is gone permanently.**

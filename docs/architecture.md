@@ -44,6 +44,14 @@ schedules), `pest-model-watchdog` (stops a Rekognition endpoint left running
 past the camera row's `max_runtime_min`), `kvs-hls-handler` (live-view playback
 URLs).
 
+**Five Lambdas, five files.** `deployer/deploy.py` creates exactly five
+functions and `lambda/` mirrors all five, one file per function. If you add a
+Lambda to the deployer, add its mirror here too — the two lists are meant to
+match, and a missing mirror is the kind of gap that hides until someone needs
+to read the code. `kvs-hls-handler` is deliberately separate from
+`pest-monitoring-api`: it holds a narrow IAM surface (two `kinesisvideo` read
+actions, no DynamoDB, S3 or SES).
+
 ---
 
 ## Inside the Lambda
