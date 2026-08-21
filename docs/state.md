@@ -62,10 +62,23 @@ from the laptop's campus-WiFi interface got **no answer at all**, because the
 laptop sits in `10.1.40.0/21` and the dog in `10.1.120.0/21` - mDNS is
 link-local multicast and does not cross subnets. Facts for the fix:
 wlan0 MAC **`00:2e:2d:ad:3c:8d`**, current lease `10.1.122.235/21`, NM profile
-`npwireless`, hostname is the generic `ubuntu`. Real options: a DHCP
-reservation from NP IT on that MAC (permanent, Mr Ong can file it), or an IP
-self-report beacon from the dog. Renaming the host off `ubuntu` is worth doing
-either way and needs sudo.
+`npwireless`. **Acted on the same day, all three parts:**
+- Hostname renamed `ubuntu` -> **`argus-go2`** (hostnamectl + /etc/hosts +
+  avahi restart). `ssh argus-go2.local` works on the wired dog net; the generic
+  `ubuntu.local` was a collision risk on a campus full of Ubuntu boxes.
+- SSH aliases on Runzhe's laptop (`~/.ssh/config`): **`go2`** = the WiFi lease,
+  **`go2-wired`** = `argus-go2.local`. Both tested.
+- **`robot/ip_beacon.py`** deployed to `~/go2/` and wired into the unitree
+  user's crontab (`@reboot sleep 60` + `*/5 * * * *`, no root). It PUTs every
+  address the Orin holds to
+  `s3://argus-frames-506868652945/ops/orin/orin_ip.json`. Read from anywhere:
+  `aws s3 cp s3://argus-frames-506868652945/ops/orin/orin_ip.json - --profile prod`.
+  Needed one extra statement on `orin-go2`'s policy (`ops/orin/*`); the first
+  run failed AccessDenied purely on IAM propagation and succeeded 20 s later.
+- Still outstanding and still the only permanent fix: **a DHCP reservation from
+  NP IT on wlan0 MAC `00:2e:2d:ad:3c:8d`.** Mr Ong is the person to file it.
+  With the address pinned, the `go2` alias never needs editing again and he can
+  copy the same three lines onto his own laptop.
 
 **BLOCKER 3 - A8 GIMBAL: RESOLVED BY A REBOOT, NOT A CABLE.** Before the
 reboot `eth0` was absent from `ip link` entirely and the Orin's USB bus listed

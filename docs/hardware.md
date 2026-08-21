@@ -8,6 +8,21 @@ Passwords are documented separately, not in this file.
 - Jetson Orin Nano 192.168.123.18 (SSH user `unitree`, Ubuntu 20.04, ROS 2 Foxy, SSH alias
   `go2`). `unitree_ros2_example` binaries are at `bin/`, not `lib/<pkg>/` — run directly,
   `ros2 run` fails.
+  **Hostname is `argus-go2`** (renamed from the generic `ubuntu` on 2026-08-21, avahi
+  restarted), so on the WIRED dog net it answers to `argus-go2.local` — mDNS works there
+  and **cannot** work over campus WiFi, where the laptop and the dog sit in different /21s
+  (mDNS is link-local multicast). SSH aliases on Runzhe's laptop: `go2` = the WiFi lease,
+  `go2-wired` = `argus-go2.local`.
+  **Finding the dog on WiFi when the lease has moved:** `~/go2/ip_beacon.py` publishes
+  every address the Orin holds to `s3://argus-frames-506868652945/ops/orin/orin_ip.json`
+  on boot (+60 s, wlan0 has no lease for ~45 s) and every 5 minutes, via the unitree user's
+  crontab — no root involved. Read it with
+  `aws s3 cp s3://argus-frames-506868652945/ops/orin/orin_ip.json - --profile prod`.
+  Last run's status is one line in `~/go2/.ip_beacon_last`; failures are silent by design.
+  The permanent fix is still a DHCP reservation on wlan0 MAC `00:2e:2d:ad:3c:8d`.
+  **If `eth0` (the A8 camera net, 192.168.144.30) is missing from `ip link`, REBOOT before
+  suspecting the cable** — the ASIX adapter failed to enumerate on 2026-08-21 while
+  physically connected, and a reboot brought it back.
 
 ### Orin WiFi profiles (NetworkManager, RTL8821CU dongle on wlan0)
 Managed with `nmcli`; all of them need `sudo` (the `unitree` user has no polkit session over
