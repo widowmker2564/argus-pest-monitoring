@@ -1,0 +1,24 @@
+{
+    "ActionAfterCompletion": "NONE",
+    "Arn": "arn:aws:scheduler:us-east-1:366356442579:schedule/default/model-start-schedule",
+    "Description": "Start model at 05:53",
+    "FlexibleTimeWindow": {
+        "Mode": "OFF"
+    },
+    "GroupName": "default",
+    "Name": "model-start-schedule",
+    "ScheduleExpression": "cron(53 5 ? * MON,TUE,WED,THU,FRI,SAT,SUN *)",
+    "ScheduleExpressionTimezone": "Asia/Singapore",
+    "State": "ENABLED",
+    "Target": {
+        "Arn": "arn:aws:lambda:us-east-1:366356442579:function:pest-model-control",
+        "Input": "{\"action\": \"start\"}",
+        "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 86400,
+            "MaximumRetryAttempts": 185
+        },
+        "RoleArn": "arn:aws:iam::366356442579:role/service-role/Amazon_EventBridge_Scheduler_LAMBDA_4c3f0b5d17"
+    },
+    "_classification": "DEAD",
+    "_note": "GEN-1 daily auto-capture pipeline. Targets Gen-1 Lambda pest-model-control with Input {action:start}. Fires 05:53 Asia/Singapore daily. Part of the pending product decision 'scheduled auto-capture in scope?'. If kept, deploy.py must rebuild against Gen-2 (pest-camera-scheduler), not pest-model-control."
+}

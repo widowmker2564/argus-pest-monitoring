@@ -1,0 +1,39 @@
+{
+    "Schedules": [
+        {
+            "Arn": "arn:aws:scheduler:us-east-1:366356442579:schedule/default/pest-model-watchdog-15min",
+            "GroupName": "default",
+            "Name": "pest-model-watchdog-15min",
+            "State": "ENABLED",
+            "Target": { "Arn": "arn:aws:lambda:us-east-1:366356442579:function:pest-model-watchdog" }
+        },
+        {
+            "Arn": "arn:aws:scheduler:us-east-1:366356442579:schedule/default/model-stop-schedule",
+            "GroupName": "default",
+            "Name": "model-stop-schedule",
+            "State": "ENABLED",
+            "Target": { "Arn": "arn:aws:lambda:us-east-1:366356442579:function:pest-model-control" }
+        },
+        {
+            "Arn": "arn:aws:scheduler:us-east-1:366356442579:schedule/default/frame-extraction-schedule",
+            "GroupName": "default",
+            "Name": "frame-extraction-schedule",
+            "State": "ENABLED",
+            "Target": { "Arn": "arn:aws:lambda:us-east-1:366356442579:function:Extraction" }
+        },
+        {
+            "Arn": "arn:aws:scheduler:us-east-1:366356442579:schedule/default/ExtractFrameEveryMinute",
+            "GroupName": "default",
+            "Name": "ExtractFrameEveryMinute",
+            "State": "DISABLED",
+            "Target": { "Arn": "arn:aws:lambda:us-east-1:366356442579:function:Extraction" }
+        },
+        {
+            "Arn": "arn:aws:scheduler:us-east-1:366356442579:schedule/default/model-start-schedule",
+            "GroupName": "default",
+            "Name": "model-start-schedule",
+            "State": "ENABLED",
+            "Target": { "Arn": "arn:aws:lambda:us-east-1:366356442579:function:pest-model-control" }
+        }
+    ]
+}

@@ -1,0 +1,14 @@
+[Unit]
+Description=KVS Controller (mini PC) - polls /stream/status and pushes Hikvision RTSP to KVS
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=wilburteo
+ExecStart=/home/wilburteo/run_kvs_controller.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

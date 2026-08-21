@@ -1,0 +1,206 @@
+{
+    "Items": [
+        {
+            "default_waypoint_id": {
+                "S": "manual_upload"
+            },
+            "label": {
+                "S": "Manual test upload"
+            },
+            "target_label": {
+                "S": "Person"
+            },
+            "stream_enabled": {
+                "BOOL": false
+            },
+            "model_type": {
+                "S": "general"
+            },
+            "min_confidence": {
+                "N": "80"
+            },
+            "camera_id": {
+                "S": "manual_upload"
+            },
+            "schedule": {
+                "M": {}
+            },
+            "model_running": {
+                "BOOL": true
+            },
+            "migrated_at": {
+                "S": "2026-05-21T05:38:13Z"
+            },
+            "custom_model_arn": {
+                "S": ""
+            },
+            "migrated_from": {
+                "S": "runzhe-system-config"
+            },
+            "kvs_stream_name": {
+                "NULL": true
+            }
+        },
+        {
+            "default_waypoint_id": {
+                "S": "zone_test"
+            },
+            "label": {
+                "S": "Person (Hikvision test)"
+            },
+            "target_label": {
+                "S": "Person"
+            },
+            "stream_enabled": {
+                "BOOL": false
+            },
+            "model_type": {
+                "S": "general"
+            },
+            "min_confidence": {
+                "N": "95"
+            },
+            "camera_id": {
+                "S": "person_cam"
+            },
+            "schedule": {
+                "M": {}
+            },
+            "model_running": {
+                "BOOL": true
+            },
+            "migrated_at": {
+                "S": "2026-05-21T05:38:13Z"
+            },
+            "custom_model_arn": {
+                "S": ""
+            },
+            "migrated_from": {
+                "S": "runzhe-system-config"
+            },
+            "kvs_stream_name": {
+                "NULL": true
+            }
+        },
+        {
+            "default_waypoint_id": {
+                "S": "zone0_moth_fixed"
+            },
+            "label": {
+                "S": "Moth (fixed indoor)"
+            },
+            "stream_enabled": {
+                "BOOL": false
+            },
+            "target_label": {
+                "S": "Moths"
+            },
+            "model_type": {
+                "S": "custom"
+            },
+            "min_confidence": {
+                "N": "80"
+            },
+            "camera_id": {
+                "S": "moth_cam_01"
+            },
+            "model_running": {
+                "BOOL": false
+            },
+            "schedule": {
+                "M": {
+                    "end_time": {
+                        "S": "17:00"
+                    },
+                    "days": {
+                        "L": []
+                    },
+                    "start_time": {
+                        "S": "09:00"
+                    },
+                    "updated_at": {
+                        "S": "2026-05-04T06:53:40Z"
+                    },
+                    "enabled": {
+                        "BOOL": false
+                    }
+                }
+            },
+            "migrated_at": {
+                "S": "2026-05-21T05:38:13Z"
+            },
+            "custom_model_arn": {
+                "S": "arn:aws:rekognition:us-east-1:366356442579:project/SmartPestProject/version/SmartPestProject.2026-02-15T01.13.58/1771089238911"
+            },
+            "migrated_from": {
+                "S": "runzhe-system-config"
+            },
+            "kvs_stream_name": {
+                "S": "moth-cam-stream"
+            }
+        },
+        {
+            "default_waypoint_id": {
+                "NULL": true
+            },
+            "tiling_enabled": {
+                "BOOL": true
+            },
+            "label": {
+                "S": "Armyworm (Go2 mobile)"
+            },
+            "stream_enabled": {
+                "BOOL": false
+            },
+            "target_label": {
+                "S": "armyworm-larva"
+            },
+            "model_type": {
+                "S": "custom"
+            },
+            "min_confidence": {
+                "N": "60"
+            },
+            "camera_id": {
+                "S": "armyworm_go2_a8mini"
+            },
+            "model_running": {
+                "BOOL": false
+            },
+            "schedule": {
+                "M": {
+                    "end_time": {
+                        "S": "17:00"
+                    },
+                    "days": {
+                        "L": []
+                    },
+                    "start_time": {
+                        "S": "09:00"
+                    },
+                    "updated_at": {
+                        "S": "2026-05-06T05:56:08Z"
+                    },
+                    "enabled": {
+                        "BOOL": false
+                    }
+                }
+            },
+            "migrated_at": {
+                "S": "2026-05-21T05:38:13Z"
+            },
+            "custom_model_arn": {
+                "S": "arn:aws:rekognition:us-east-1:366356442579:project/armyworm-detection/version/v5-2026-07-07/1783394123547"
+            },
+            "migrated_from": {
+                "S": "runzhe-system-config"
+            },
+            "kvs_stream_name": {
+                "S": "armyworm-cam-stream"
+            }
+        }
+    ],
+    "Count": 4,
+    "ScannedCount": 4,
+    "ConsumedCapacity": null
+}

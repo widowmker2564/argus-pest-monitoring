@@ -1,0 +1,29 @@
+{
+  "_note": "CloudWatch Logs. Every log group is auto-created by Lambda on first invoke as /aws/lambda/<fn>. deploy.py should NOT explicitly create these; they appear when the Lambdas run. NONE have a custom retention (retentionInDays=null = Never Expire). If deploy.py wants to cap cost it may optionally set retention via put-retention-policy, but that is not part of the current live config. NO CloudWatch alarms exist (describe-alarms returned empty). NO metric filters (all metricFilterCount=0).",
+  "region": "us-east-1",
+  "account": "366356442579",
+  "alarms": "NONE",
+  "gen2_core_log_groups": [
+    { "logGroupName": "/aws/lambda/pest-detection-processor", "retentionInDays": null, "classification": "PROD" },
+    { "logGroupName": "/aws/lambda/pest-monitoring-api", "retentionInDays": null, "classification": "PROD" },
+    { "logGroupName": "/aws/lambda/kvs-hls-handler", "retentionInDays": null, "classification": "PROD" },
+    { "logGroupName": "/aws/lambda/pest-model-watchdog", "retentionInDays": null, "classification": "PROD" }
+  ],
+  "gen2_core_missing_log_group": {
+    "note": "pest-camera-scheduler has NO log group yet — meaning it has likely not been invoked recently, or invocations are logging elsewhere. Confirm with the Lambda auditor.",
+    "logGroupName": "/aws/lambda/pest-camera-scheduler"
+  },
+  "other_log_groups_present": [
+    { "logGroupName": "/aws/lambda/Extraction", "classification": "DEAD", "reason": "Gen-1 Wilbur" },
+    { "logGroupName": "/aws/lambda/FrameExtractionControl", "classification": "DEAD" },
+    { "logGroupName": "/aws/lambda/ImageProcessing", "classification": "DEAD" },
+    { "logGroupName": "/aws/lambda/Scheduling", "classification": "DEAD" },
+    { "logGroupName": "/aws/lambda/image-upload-handler", "classification": "DEAD" },
+    { "logGroupName": "/aws/lambda/kvs-hls-url-generator", "classification": "DEAD", "reason": "Gen-1 predecessor of kvs-hls-handler" },
+    { "logGroupName": "/aws/lambda/pest-detection-http", "classification": "DEAD" },
+    { "logGroupName": "/aws/lambda/pest-model-control", "classification": "DEAD", "reason": "Gen-1 model start/stop, still driven by DEAD schedules" },
+    { "logGroupName": "/aws/lambda/ses-identity-manager", "classification": "DEAD" },
+    { "logGroupName": "/aws/lambda/websocket-handler", "classification": "DEAD", "reason": "Gen-1 WebSocket API" },
+    { "logGroupName": "/aws/lambda/lightsOutFunc", "classification": "NOT_PEST", "reason": "lights-out project" }
+  ]
+}

@@ -1,0 +1,15 @@
+[Unit]
+Description=KVS Controller (Orin/A8) - polls /stream/status and pushes A8 RTSP to KVS
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=unitree
+WorkingDirectory=/home/unitree/amazon-kinesis-video-streams-producer-sdk-cpp/build
+ExecStart=/home/unitree/run_kvs_controller.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

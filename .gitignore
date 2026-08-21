@@ -1,0 +1,60 @@
+# ARGUS — public repository.
+#
+# What is deliberately IN this repo: all source, the evaluation holdout, the
+# training-pipeline scripts, the frozen model-ladder harness, the final report
+# (EN + ZH) and the full technical manual.
+#
+# What stays OUT: build output, local machine state, anything secret, and the
+# bulk training imagery (tens of GB, re-downloadable from its sources — see
+# datasets/README.md).
+
+# ---- Credentials: never commit ---------------------------------------------
+*.pem
+*.key
+.env
+.env.*
+credentials
+aws_credentials*
+*_secret*
+*secret_access_key*
+
+# ---- Local-only working material -------------------------------------------
+_private/
+scratchpad/
+_claude_state/
+
+# ---- Bulk training imagery --------------------------------------------------
+# The holdout and the pipeline scripts ARE tracked. Only the multi-GB source
+# and assembled training sets are excluded.
+datasets/sources/
+datasets/v7_*_worm/
+datasets/v8_worm/
+datasets/v9_worm/
+training-data/
+
+# ---- Build + packaging output ----------------------------------------------
+deployer/dist/
+deployer/build/
+deployer/layer/
+deployer/out/
+*.exe
+*.spec.bak
+
+# ---- Python -----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# ---- Local / machine specific ----------------------------------------------
+.vscode/settings.json
+.claude/settings.local.json
+*.bak
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+
+# ---- MS Office owner/lock files ---------------------------------------------
+~$*

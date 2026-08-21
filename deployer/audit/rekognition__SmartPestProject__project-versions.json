@@ -1,0 +1,172 @@
+{
+    "ProjectVersionDescriptions": [
+        {
+            "ProjectVersionArn": "arn:aws:rekognition:us-east-1:366356442579:project/SmartPestProject/version/SmartPestProject.2026-02-15T01.13.58/1771089238911",
+            "CreationTimestamp": "2026-02-15T01:13:58.911000+08:00",
+            "Status": "STOPPED",
+            "StatusMessage": "The model is ready for hosting.",
+            "BillableTrainingTimeInSeconds": 2461,
+            "TrainingEndTimestamp": "2026-02-15T01:41:32.630000+08:00",
+            "OutputConfig": {
+                "S3Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                "S3KeyPrefix": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/SmartPestProject/1770533984964"
+            },
+            "TrainingDataResult": {
+                "Input": {},
+                "Output": {
+                    "Assets": [
+                        {
+                            "GroundTruthManifest": {
+                                "S3Object": {
+                                    "Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                                    "Name": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/SmartPestProject/1770533984964/TrainingGroundTruth-SmartPestProject-SmartPestProject.2026-02-15T01.13.58.json"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "Validation": {
+                    "Assets": [
+                        {
+                            "GroundTruthManifest": {
+                                "S3Object": {
+                                    "Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                                    "Name": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/SmartPestProject/1770533984964/TrainingManifestWithValidation-SmartPestProject-SmartPestProject.2026-02-15T01.13.58.json"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "TestingDataResult": {
+                "Input": {
+                    "AutoCreate": false
+                },
+                "Output": {
+                    "Assets": [
+                        {
+                            "GroundTruthManifest": {
+                                "S3Object": {
+                                    "Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                                    "Name": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/SmartPestProject/1770533984964/TestingGroundTruth-SmartPestProject-SmartPestProject.2026-02-15T01.13.58.json"
+                                }
+                            }
+                        }
+                    ],
+                    "AutoCreate": false
+                },
+                "Validation": {
+                    "Assets": [
+                        {
+                            "GroundTruthManifest": {
+                                "S3Object": {
+                                    "Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                                    "Name": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/SmartPestProject/1770533984964/TestingManifestWithValidation-SmartPestProject-SmartPestProject.2026-02-15T01.13.58.json"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "EvaluationResult": {
+                "F1Score": 0.9883268475532532,
+                "Summary": {
+                    "S3Object": {
+                        "Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                        "Name": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/SmartPestProject/1770533984964/EvaluationResultSummary-SmartPestProject-SmartPestProject.2026-02-15T01.13.58.json"
+                    }
+                }
+            },
+            "ManifestSummary": {
+                "S3Object": {
+                    "Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                    "Name": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/SmartPestProject/1770533984964/ManifestSummary-SmartPestProject-SmartPestProject.2026-02-15T01.13.58.json"
+                }
+            }
+        },
+        {
+            "ProjectVersionArn": "arn:aws:rekognition:us-east-1:366356442579:project/SmartPestProject/version/SmartPestProject.2026-02-08T16.26.35/1770539195207",
+            "CreationTimestamp": "2026-02-08T16:26:35.207000+08:00",
+            "Status": "STOPPED",
+            "StatusMessage": "The model is ready for hosting.",
+            "BillableTrainingTimeInSeconds": 1231,
+            "TrainingEndTimestamp": "2026-02-08T16:50:00.326000+08:00",
+            "OutputConfig": {
+                "S3Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                "S3KeyPrefix": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/SmartPestProject/1770533984964"
+            },
+            "TrainingDataResult": {
+                "Input": {},
+                "Output": {
+                    "Assets": [
+                        {
+                            "GroundTruthManifest": {
+                                "S3Object": {
+                                    "Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                                    "Name": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/SmartPestProject/1770533984964/TrainingGroundTruth-SmartPestProject-SmartPestProject.2026-02-08T16.26.35.json"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "Validation": {
+                    "Assets": [
+                        {
+                            "GroundTruthManifest": {
+                                "S3Object": {
+                                    "Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                                    "Name": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/SmartPestProject/1770533984964/TrainingManifestWithValidation-SmartPestProject-SmartPestProject.2026-02-08T16.26.35.json"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "TestingDataResult": {
+                "Input": {
+                    "AutoCreate": false
+                },
+                "Output": {
+                    "Assets": [
+                        {
+                            "GroundTruthManifest": {
+                                "S3Object": {
+                                    "Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                                    "Name": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/SmartPestProject/1770533984964/TestingGroundTruth-SmartPestProject-SmartPestProject.2026-02-08T16.26.35.json"
+                                }
+                            }
+                        }
+                    ],
+                    "AutoCreate": false
+                },
+                "Validation": {
+                    "Assets": [
+                        {
+                            "GroundTruthManifest": {
+                                "S3Object": {
+                                    "Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                                    "Name": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/SmartPestProject/1770533984964/TestingManifestWithValidation-SmartPestProject-SmartPestProject.2026-02-08T16.26.35.json"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "EvaluationResult": {
+                "F1Score": 0.6260120272636414,
+                "Summary": {
+                    "S3Object": {
+                        "Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                        "Name": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/SmartPestProject/1770533984964/EvaluationResultSummary-SmartPestProject-SmartPestProject.2026-02-08T16.26.35.json"
+                    }
+                }
+            },
+            "ManifestSummary": {
+                "S3Object": {
+                    "Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                    "Name": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/SmartPestProject/1770533984964/ManifestSummary-SmartPestProject-SmartPestProject.2026-02-08T16.26.35.json"
+                }
+            }
+        }
+    ]
+}

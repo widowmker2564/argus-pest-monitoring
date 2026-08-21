@@ -1,0 +1,29 @@
+{
+    "ApiEndpoint": "https://zwpcbivmsj.execute-api.us-east-1.amazonaws.com",
+    "ApiId": "zwpcbivmsj",
+    "ApiKeySelectionExpression": "$request.header.x-api-key",
+    "CorsConfiguration": {
+        "AllowHeaders": [
+            "content-type",
+            "authorization"
+        ],
+        "AllowMethods": [
+            "GET",
+            "POST",
+            "DELETE",
+            "OPTIONS"
+        ],
+        "AllowOrigins": [
+            "*"
+        ],
+        "MaxAge": 3600
+    },
+    "CreatedDate": "2026-05-21T07:35:00+00:00",
+    "Description": "Pest monitoring system API (Runzhe FYP)",
+    "DisableExecuteApiEndpoint": false,
+    "IpAddressType": "ipv4",
+    "Name": "pest-monitoring-api-gateway",
+    "ProtocolType": "HTTP",
+    "RouteSelectionExpression": "$request.method $request.path",
+    "Tags": {}
+}

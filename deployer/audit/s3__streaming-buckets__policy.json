@@ -1,0 +1,28 @@
+{
+  "_note": "DEAD / Gen-1 (Wilbur). Wired to ImageProcessing Lambda, not the current pest pipeline. Not recreated by deploy.py. Captured for completeness only.",
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowKinesisVideoImageGeneration",
+      "Effect": "Allow",
+      "Principal": { "Service": "kinesisvideo.amazonaws.com" },
+      "Action": ["s3:PutObject", "s3:GetBucketLocation"],
+      "Resource": ["arn:aws:s3:::streaming-buckets", "arn:aws:s3:::streaming-buckets/*"],
+      "Condition": { "StringEquals": { "aws:SourceAccount": "366356442579" } }
+    },
+    {
+      "Sid": "AllowLambdaUploadToFrames",
+      "Effect": "Allow",
+      "Principal": { "AWS": "arn:aws:iam::366356442579:role/service-role/image-upload-handler-role-scp0s0mw" },
+      "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
+      "Resource": "arn:aws:s3:::streaming-buckets/frames/*"
+    },
+    {
+      "Sid": "AllowPublicReadFrames",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::streaming-buckets/frames/*"
+    }
+  ]
+}

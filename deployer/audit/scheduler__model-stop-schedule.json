@@ -1,0 +1,24 @@
+{
+    "ActionAfterCompletion": "NONE",
+    "Arn": "arn:aws:scheduler:us-east-1:366356442579:schedule/default/model-stop-schedule",
+    "Description": "Stop model at 06:01",
+    "FlexibleTimeWindow": {
+        "Mode": "OFF"
+    },
+    "GroupName": "default",
+    "Name": "model-stop-schedule",
+    "ScheduleExpression": "cron(1 6 ? * MON,TUE,WED,THU,FRI,SAT,SUN *)",
+    "ScheduleExpressionTimezone": "Asia/Singapore",
+    "State": "ENABLED",
+    "Target": {
+        "Arn": "arn:aws:lambda:us-east-1:366356442579:function:pest-model-control",
+        "Input": "{\"action\": \"stop\"}",
+        "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 86400,
+            "MaximumRetryAttempts": 185
+        },
+        "RoleArn": "arn:aws:iam::366356442579:role/service-role/Amazon_EventBridge_Scheduler_LAMBDA_4c3f0b5d17"
+    },
+    "_classification": "DEAD",
+    "_note": "GEN-1 daily auto-capture pipeline. Targets Gen-1 Lambda pest-model-control with Input {action:stop}. Fires 06:01 Asia/Singapore daily (8 min after start). Same pending product decision. Overlaps in function with the Gen-2 pest-model-watchdog cost guard."
+}

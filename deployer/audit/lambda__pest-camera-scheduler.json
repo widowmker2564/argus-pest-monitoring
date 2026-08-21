@@ -1,0 +1,27 @@
+{
+  "FunctionName": "pest-camera-scheduler",
+  "classification": "PROD",
+  "Runtime": "python3.12",
+  "Handler": "lambda_function.lambda_handler",
+  "MemorySize": 128,
+  "Timeout": 60,
+  "Architectures": ["x86_64"],
+  "EphemeralStorage": 512,
+  "Role": "arn:aws:iam::366356442579:role/pest-camera-scheduler-role",
+  "ReservedConcurrency": null,
+  "ProvisionedConcurrency": null,
+  "Environment": {
+    "TABLE_CAMERAS": "pest-monitoring-cameras",
+    "TABLE_SCHEDULE_LOGS": "pest-monitoring-schedule-logs"
+  },
+  "Layers": [],
+  "CodeSha256": "r6b3xOYj3I7Mvv46REWkbV/Gg6L75jGt4ypCJa2ZH1g=",
+  "LocalCodeMirror": "C:\\FYP\\lambda\\pest-camera-scheduler.py",
+  "Triggers": {
+    "DynamicEventBridgeRules": {
+      "Note": "NO static trigger and NO resource-based policy at rest. Invoked by EventBridge rules named pest-sched-{camera_id}-{action} that pest-monitoring-api creates on demand when a user schedules a camera. Each rule uses cron(mm hh ? * DAYS *) UTC and passes Input {camera_id, action, schedule_id, trigger_time}. pest-monitoring-api adds the per-rule lambda:AddPermission (StatementId sched-invoke-<rule>, Principal events.amazonaws.com) itself.",
+      "AlsoInvokedDirectly": "pest-monitoring-api can invoke this function synchronously via SCHEDULE_EXECUTOR_ARN for immediate start/stop."
+    }
+  },
+  "ResourcePolicy": null
+}

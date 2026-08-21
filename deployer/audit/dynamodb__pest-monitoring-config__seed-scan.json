@@ -1,0 +1,105 @@
+{
+    "Items": [
+        {
+            "config_id": {
+                "S": "frame_schedule"
+            },
+            "config_data": {
+                "M": {
+                    "end_time": {
+                        "S": "06:01"
+                    },
+                    "start_time": {
+                        "S": "06:00"
+                    },
+                    "days": {
+                        "L": [
+                            {
+                                "S": "Mon"
+                            },
+                            {
+                                "S": "Tue"
+                            },
+                            {
+                                "S": "Wed"
+                            },
+                            {
+                                "S": "Thu"
+                            },
+                            {
+                                "S": "Fri"
+                            },
+                            {
+                                "S": "Sat"
+                            },
+                            {
+                                "S": "Sun"
+                            }
+                        ]
+                    },
+                    "last_updated": {
+                        "S": "2026-04-13T15:09:59.754991"
+                    },
+                    "cloud_execution": {
+                        "BOOL": true
+                    },
+                    "enabled": {
+                        "BOOL": true
+                    }
+                }
+            }
+        },
+        {
+            "config_id": {
+                "S": "model_schedule"
+            },
+            "config_data": {
+                "M": {
+                    "end_time": {
+                        "S": "06:01"
+                    },
+                    "start_time": {
+                        "S": "05:53"
+                    },
+                    "days": {
+                        "L": [
+                            {
+                                "S": "Mon"
+                            },
+                            {
+                                "S": "Tue"
+                            },
+                            {
+                                "S": "Wed"
+                            },
+                            {
+                                "S": "Thu"
+                            },
+                            {
+                                "S": "Fri"
+                            },
+                            {
+                                "S": "Sat"
+                            },
+                            {
+                                "S": "Sun"
+                            }
+                        ]
+                    },
+                    "last_updated": {
+                        "S": "2026-04-13T15:10:59.143581"
+                    },
+                    "cloud_execution": {
+                        "BOOL": true
+                    },
+                    "enabled": {
+                        "BOOL": true
+                    }
+                }
+            }
+        }
+    ],
+    "Count": 2,
+    "ScannedCount": 2,
+    "ConsumedCapacity": null
+}

@@ -1,0 +1,40 @@
+{
+  "FunctionName": "pest-detection-processor",
+  "classification": "PROD",
+  "Runtime": "python3.12",
+  "Handler": "lambda_function.lambda_handler",
+  "MemorySize": 512,
+  "Timeout": 60,
+  "Architectures": ["x86_64"],
+  "EphemeralStorage": 512,
+  "Role": "arn:aws:iam::366356442579:role/pest-detection-processor-role",
+  "ReservedConcurrency": null,
+  "ProvisionedConcurrency": null,
+  "Environment": {
+    "SENDER_EMAIL": "rex2956550768@gmail.com",
+    "TABLE_CAMERAS": "pest-monitoring-cameras",
+    "TABLE_SYSTEM_CONFIG": "pest-monitoring-system-config",
+    "S3_PROCESSED_BUCKET": "processed-images-armyworm-366356442579",
+    "TABLE_DETECTIONS": "pest-monitoring-detections"
+  },
+  "Layers": [
+    { "Arn": "arn:aws:lambda:us-east-1:366356442579:layer:fyp-pillow:2", "CodeSize": 7888247 }
+  ],
+  "CodeSha256": "bZIvoCw5BT2wKT6Emz1My714uajLBTlaDDLc/dqsId0=",
+  "LocalCodeMirror": "C:\\FYP\\lambda\\pest-detection-processor.py",
+  "Triggers": {
+    "S3": {
+      "Bucket": "frames-armyworm-366356442579",
+      "Events": ["s3:ObjectCreated:*"],
+      "FilterPrefix": "frames/",
+      "NotificationId": "b1b84ffd-ffbc-48ab-82a2-1e6e77118d24"
+    }
+  },
+  "ResourcePolicy": {
+    "note": "S3 invoke permission. Two DUPLICATE statements present in live account (one auto-added by console, one by CLI). deploy.py needs ONE.",
+    "Principal": "s3.amazonaws.com",
+    "Action": "lambda:InvokeFunction",
+    "Condition_SourceAccount": "366356442579",
+    "Condition_SourceArn": "arn:aws:s3:::frames-armyworm-366356442579"
+  }
+}

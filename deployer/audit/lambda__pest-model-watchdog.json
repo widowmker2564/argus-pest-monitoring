@@ -1,0 +1,37 @@
+{
+  "FunctionName": "pest-model-watchdog",
+  "classification": "PROD",
+  "Runtime": "python3.12",
+  "Handler": "lambda_function.lambda_handler",
+  "MemorySize": 128,
+  "Timeout": 30,
+  "Architectures": ["x86_64"],
+  "EphemeralStorage": 512,
+  "Role": "arn:aws:iam::366356442579:role/service-role/pest-model-watchdog-role-78asdw2b",
+  "ReservedConcurrency": null,
+  "ProvisionedConcurrency": null,
+  "Environment": {
+    "TABLE_CAMERAS": "pest-monitoring-cameras",
+    "MAX_RUNTIME_MIN": "75"
+  },
+  "Layers": [],
+  "CodeSha256": "XwsWhIYNuupHG8Cz7ftXJ0x1hq1vEbMCybnnGxzav/E=",
+  "LocalCodeMirror": "GAP - not mirrored anywhere in C:\\FYP\\ before this audit. Downloaded live to C:\\FYP\\deployer\\audit\\pest-model-watchdog_src\\lambda_function.py (and .zip).",
+  "Triggers": {
+    "EventBridgeScheduler": {
+      "ScheduleName": "pest-model-watchdog-15min",
+      "Group": "default",
+      "ScheduleExpression": "rate(15 minutes)",
+      "ScheduleExpressionTimezone": "Asia/Singapore",
+      "State": "ENABLED",
+      "FlexibleTimeWindow": "OFF",
+      "TargetArn": "arn:aws:lambda:us-east-1:366356442579:function:pest-model-watchdog",
+      "TargetRoleArn": "arn:aws:iam::366356442579:role/service-role/Amazon_EventBridge_Scheduler_LAMBDA_d585792c00",
+      "RetryPolicy": { "MaximumEventAgeInSeconds": 86400, "MaximumRetryAttempts": 0 },
+      "Note": "EventBridge SCHEDULER (aws scheduler), not an EventBridge Rule. Note code docstring says 10 min / 60 min default but LIVE truth is rate(15 minutes) + MAX_RUNTIME_MIN=75."
+    }
+  },
+  "ResourcePolicy": {
+    "note": "get-policy returned ResourceNotFoundException = NO resource-based policy at rest. EventBridge Scheduler invokes via its TargetRoleArn (an IAM role with lambda:InvokeFunction), NOT via a resource policy. deploy.py must create that scheduler execution role instead of an AddPermission statement."
+  }
+}

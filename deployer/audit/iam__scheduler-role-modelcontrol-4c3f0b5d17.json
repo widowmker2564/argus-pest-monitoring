@@ -1,0 +1,36 @@
+{
+    "RoleName": "Amazon_EventBridge_Scheduler_LAMBDA_4c3f0b5d17",
+    "Path": "/service-role/",
+    "Arn": "arn:aws:iam::366356442579:role/service-role/Amazon_EventBridge_Scheduler_LAMBDA_4c3f0b5d17",
+    "MaxSessionDuration": 3600,
+    "AssumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": { "Service": "scheduler.amazonaws.com" },
+                "Action": "sts:AssumeRole",
+                "Condition": { "StringEquals": { "aws:SourceAccount": "366356442579" } }
+            }
+        ]
+    },
+    "AttachedManagedPolicyArn": "arn:aws:iam::366356442579:policy/service-role/Amazon-EventBridge-Scheduler-Execution-Policy-0b3e9fc7-0c2c-4f6c-9f8a-d128b3c31d39",
+    "InlinePolicies": [],
+    "PolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [ "lambda:InvokeFunction" ],
+                "Resource": [
+                    "arn:aws:lambda:us-east-1:366356442579:function:Extraction:*",
+                    "arn:aws:lambda:us-east-1:366356442579:function:Extraction",
+                    "arn:aws:lambda:us-east-1:366356442579:function:pest-model-control:*",
+                    "arn:aws:lambda:us-east-1:366356442579:function:pest-model-control"
+                ]
+            }
+        ]
+    },
+    "_classification": "DEAD",
+    "_note": "Shared execution role for the three GEN-1 auto-capture schedules (model-start, model-stop, frame-extraction). Scoped to Gen-1 Lambdas Extraction + pest-model-control. Only relevant if the 'scheduled auto-capture in scope?' decision keeps auto-capture, in which case deploy.py builds a fresh equivalent role scoped to the Gen-2 pest-camera-scheduler ARN instead. Do NOT recreate as-is."
+}

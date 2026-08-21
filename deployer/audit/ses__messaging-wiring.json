@@ -1,0 +1,32 @@
+{
+  "_audit_note": "How the pest alert email path is wired, account 366356442579 / us-east-1, captured 2026-07-08. Alert emails are sent by pest-detection-processor via SES SendEmail. Sender + recipient are both the same verified identity in dev. SNS and SQS are NOT used by the pest system.",
+  "sender": {
+    "value": "rex2956550768@gmail.com",
+    "source": "pest-detection-processor Lambda env var SENDER_EMAIL",
+    "must_be_ses_verified": true
+  },
+  "recipient": {
+    "value": "rex2956550768@gmail.com",
+    "source": "DynamoDB pest-monitoring-system-config item config_key=detection_settings, attribute recipient_email",
+    "additional_recipients": [],
+    "email_enabled": true,
+    "note": "In the sandbox the recipient ALSO must be a verified SES identity. Here sender==recipient so verifying one address satisfies both."
+  },
+  "processor_env_relevant": {
+    "SENDER_EMAIL": "rex2956550768@gmail.com",
+    "TABLE_SYSTEM_CONFIG": "pest-monitoring-system-config"
+  },
+  "system_config_item": {
+    "config_key": "detection_settings",
+    "recipient_email": "rex2956550768@gmail.com",
+    "additional_recipients": [],
+    "email_enabled": true,
+    "auto_capture": true,
+    "capture_interval": 60,
+    "migrated_from": "runzhe-system-config",
+    "migrated_at": "2026-05-21T05:38:13Z"
+  },
+  "sns_topics": [],
+  "sqs_queues": [],
+  "ses_configuration_sets": []
+}

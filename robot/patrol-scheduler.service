@@ -1,0 +1,15 @@
+[Unit]
+Description=Patrol Scheduler (Orin) - polls /schedule and launches go2_patrol_gated.py
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=unitree
+WorkingDirectory=/home/unitree/go2
+ExecStart=/home/unitree/run_patrol_scheduler.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

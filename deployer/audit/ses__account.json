@@ -1,0 +1,17 @@
+{
+  "_audit_note": "SESv2 get-account for account 366356442579 / us-east-1, captured 2026-07-08. ProductionAccessEnabled=false means the account is in the SES SANDBOX: can only send to VERIFIED identities, 200 msgs/24h, 1 msg/sec. A fresh customer account ALSO starts in the sandbox. Exiting the sandbox requires a MANUAL AWS Support 'production access' request (1-2 business days). deploy.py CANNOT auto-enable this.",
+  "GetAccount": {
+    "DedicatedIpAutoWarmupEnabled": true,
+    "EnforcementStatus": "HEALTHY",
+    "ProductionAccessEnabled": false,
+    "SendQuota": {
+      "Max24HourSend": 200.0,
+      "MaxSendRate": 1.0,
+      "SentLast24Hours": 2.0
+    },
+    "SendingEnabled": true,
+    "SuppressionAttributes": {
+      "SuppressedReasons": ["BOUNCE", "COMPLAINT"]
+    }
+  }
+}

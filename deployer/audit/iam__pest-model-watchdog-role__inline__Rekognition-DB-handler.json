@@ -1,0 +1,22 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:Scan",
+        "dynamodb:UpdateItem"
+      ],
+      "Resource": "arn:aws:dynamodb:us-east-1:366356442579:table/pest-monitoring-cameras"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "rekognition:DescribeProjects",
+        "rekognition:DescribeProjectVersions",
+        "rekognition:StopProjectVersion"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

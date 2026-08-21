@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARGUS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<nav class="topbar">
+    <div class="brand">
+        <div class="brand-logo" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1">
+                <circle cx="11" cy="11" r="9.5" opacity=".55"/>
+                <g opacity=".85">
+                    <line x1="11" y1="2.4" x2="11" y2="6.4"/><line x1="16.6" y1="4.5" x2="14.2" y2="7.7"/>
+                    <line x1="19.6" y1="9.6" x2="15.8" y2="10.4"/><line x1="18.4" y1="15.4" x2="15" y2="13.3"/>
+                    <line x1="13.7" y1="19.2" x2="12.6" y2="15.4"/><line x1="8.3" y1="19.2" x2="9.4" y2="15.4"/>
+                    <line x1="3.6" y1="15.4" x2="7" y2="13.3"/><line x1="2.4" y1="9.6" x2="6.2" y2="10.4"/>
+                    <line x1="5.4" y1="4.5" x2="7.8" y2="7.7"/>
+                </g>
+            </svg>
+        </div>
+        <span>ARGUS</span>
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <div class="topbar-right">
+        <div style="position:relative;">
+            <button class="notif-btn" onclick="toggleNotifs()" title="Live events">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                </svg>
+                <span class="notif-count zero" id="notif-count">0</span>
+            </button>
+            <div class="notif-dropdown" id="notif-dropdown">
+                <div class="notif-head">
+                    <div class="notif-title">Live events</div>
+                    <button class="btn-ghost btn-sm" onclick="clearNotifs()">Clear</button>
+                </div>
+                <div class="notif-body" id="notif-body">
+                    <div class="notif-empty">No events yet.</div>
+                </div>
+            </div>
+        </div>
+        <button class="btn-ghost btn-sm" onclick="logoutClick()" title="Sign out">Sign out</button>
+    </div>
+</nav>
+
+<main>
+    <div class="page-head">
+        <div>
+            <div class="page-title" id="page-title">Loading…</div>
+            <div class="page-sub" id="page-sub"></div>
+        </div>
+        <div id="page-actions"></div>
+    </div>
+    <section id="page-content"></section>
+</main>
+
+<!-- Image detail modal -->
+<div class="modal-backdrop" id="image-modal">
+    <div class="modal-content">
+        <div class="modal-head">
+            <div>
+                <div class="modal-head-title" id="modal-title">Detection</div>
+                <div class="modal-head-sub" id="modal-sub"></div>
+            </div>
+            <button class="btn-ghost btn-sm" onclick="closeImageModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-img-pane" id="modal-img-pane"></div>
+            <div class="modal-meta-pane" id="modal-meta-pane"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Login overlay (v4.1 Cognito auth) — opened by js/auth.js until a valid session exists -->
+<div class="login-screen" id="login-screen">
+    <form class="login-card" id="login-form">
+        <div class="login-brand">
+            <div class="brand-logo" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1">
+                    <circle cx="11" cy="11" r="9.5" opacity=".55"/>
+                    <g opacity=".85">
+                        <line x1="11" y1="2.4" x2="11" y2="6.4"/><line x1="16.6" y1="4.5" x2="14.2" y2="7.7"/>
+                        <line x1="19.6" y1="9.6" x2="15.8" y2="10.4"/><line x1="18.4" y1="15.4" x2="15" y2="13.3"/>
+                        <line x1="13.7" y1="19.2" x2="12.6" y2="15.4"/><line x1="8.3" y1="19.2" x2="9.4" y2="15.4"/>
+                        <line x1="3.6" y1="15.4" x2="7" y2="13.3"/><line x1="2.4" y1="9.6" x2="6.2" y2="10.4"/>
+                        <line x1="5.4" y1="4.5" x2="7.8" y2="7.7"/>
+                    </g>
+                </svg>
+            </div>
+            <span>ARGUS</span>
+        </div>
+        <div class="login-sub">Sign in to continue</div>
+        <label class="input-label" for="login-email">Email</label>
+        <input class="input" type="email" id="login-email" autocomplete="username" required>
+        <label class="input-label" for="login-password">Password</label>
+        <input class="input" type="password" id="login-password" autocomplete="current-password" required>
+        <div class="login-error" id="login-error"></div>
+        <button class="btn btn-primary login-btn" type="submit" id="login-submit">Sign in</button>
+    </form>
+</div>
+
+<div class="toast-container" id="toast-container"><div class="toast-stack" id="toast-stack"></div></div>
+
+<!-- CDN globals (window.Chart, window.Hls) — loaded before the module graph runs -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.12/dist/hls.min.js"></script>
+
+<!-- v4.0: single ES-module entry point. All app code lives module-scoped under js/;
+     main.js exposes only the inline-onclick handler surface on window. -->
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

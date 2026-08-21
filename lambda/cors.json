@@ -1,0 +1,6 @@
+{
+  "AllowOrigins": ["*"],
+  "AllowMethods": ["GET", "POST", "DELETE", "OPTIONS"],
+  "AllowHeaders": ["Content-Type", "Authorization"],
+  "MaxAge": 3600
+}

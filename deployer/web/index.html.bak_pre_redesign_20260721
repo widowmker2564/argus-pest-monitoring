@@ -1,0 +1,2222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARGUS Setup</title>
+<style>
+  :root {
+    --void:#eef1f5; --carbon:rgba(255,255,255,.55); --ink:#1d1d1f; --muted:#6e6e73;
+    --muted-dark:#6e6e73;
+    --hairline:rgba(30,40,60,.10); --hairline2:rgba(30,40,60,.20);
+    --teal:#0a84ff; --violet:#af52de; --ok:#248a3d; --caution:#c93400;
+    --glass:rgba(255,255,255,.38);
+    --grad:linear-gradient(110deg,#1d1d1f 5%,#0a84ff 55%,#af52de 95%);
+    --ease-out:cubic-bezier(.16,1,.3,1);
+    --ease-snap:cubic-bezier(.34,1.2,.44,1);
+    --ease-quiet:cubic-bezier(.4,0,.2,1);
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI Variable Display","Segoe UI",sans-serif;
+    background:var(--void); color:var(--ink); overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font:inherit;cursor:pointer}
+  :focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:6px}
+  #atmosphere{position:fixed;inset:0;z-index:-1;pointer-events:none}
+  #stage{position:fixed;inset:0;z-index:0}
+  #grain{position:fixed;inset:0;z-index:50;pointer-events:none;opacity:.02}
+
+  /* ---------- chrome ---------- */
+  .titlebar{
+    position:fixed;top:0;left:0;right:0;height:54px;z-index:40;
+    display:flex;align-items:center;justify-content:space-between;padding:0 26px;
+    border-bottom:1px solid var(--hairline);
+    background:rgba(255,255,255,.55);backdrop-filter:blur(22px) saturate(140%);
+  }
+  .wordmark{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;letter-spacing:.06em}
+  .wordmark svg{display:block}
+  .wordmark span{color:var(--muted);font-weight:400;letter-spacing:0;margin-left:2px}
+  .titlebar a{color:var(--muted);font-size:13px;text-decoration:none}
+  .titlebar a:hover{color:var(--ink)}
+
+  .screen{position:fixed;inset:54px 0 0 0;z-index:10;overflow-y:auto;display:none}
+  .screen.active{display:block}
+  .inner{max-width:720px;margin:0 auto;padding:64px 40px 110px;position:relative}
+  .rv{opacity:0;transform:translateY(18px)}
+  .active .rv{animation:rise .8s var(--ease-out) both;animation-delay:calc(var(--i,0)*90ms)}
+  @keyframes rise{to{opacity:1;transform:none}}
+
+  .eyebrow{font-size:13px;color:var(--muted);letter-spacing:.14em;margin-bottom:14px}
+  h2{font-size:38px;font-weight:700;letter-spacing:-.024em;line-height:1.1;margin-bottom:12px;text-wrap:balance}
+  .lede{font-size:16.5px;line-height:1.55;color:var(--muted);max-width:52ch}
+  .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .mono{font-family:var(--mono)}
+
+  .btn{
+    display:inline-flex;align-items:center;gap:9px;border-radius:980px;
+    padding:12px 26px;font-size:15px;font-weight:500;color:var(--ink);
+    background:transparent;border:1px double rgba(30,40,60,.14);
+    transition:border-color .18s var(--ease-quiet),background .18s var(--ease-quiet),transform .3s var(--ease-snap);
+    position:relative;
+  }
+  .btn:hover{border-color:rgba(255,255,255,.4);background:rgba(100,210,255,.08)}
+  .btn:active{transform:scale(.965)}
+  .btn[disabled]{opacity:.35;cursor:default}
+  .btn .arr{width:12px;height:12px;transition:transform .3s var(--ease-snap)}
+  .btn:hover .arr{transform:translateX(3px)}
+  .back{background:none;border:none;color:var(--muted);font-size:14.5px}
+  .back:hover{color:var(--ink)}
+  .nav{display:flex;justify-content:space-between;align-items:center;margin-top:48px;padding-top:26px;border-top:1px solid var(--hairline)}
+
+  /* ---------- welcome ---------- */
+  #s-welcome .hero{
+    min-height:calc(100vh - 54px);display:flex;flex-direction:column;
+    align-items:center;justify-content:flex-end;text-align:center;padding:0 24px 9vh;
+  }
+  #s-welcome h1{font-size:clamp(46px,6.4vw,84px);font-weight:700;letter-spacing:-.03em;line-height:1.04}
+  #s-welcome .sub{font-size:18px;color:var(--muted);max-width:54ch;line-height:1.5;margin:20px 0 34px}
+  .statusline{margin-top:46px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:#9a9aa0}
+
+  /* ---------- glass panels ---------- */
+  .glass{
+    background:var(--glass);backdrop-filter:blur(12px) saturate(170%);
+    border:1px solid var(--hairline);border-radius:14px;
+    box-shadow:inset 1.5px -1.5px 1px -.5px rgba(255,255,255,1),inset -1.5px 1.5px 1px -.5px rgba(255,255,255,.95),inset 0 0 2px rgba(30,40,60,.18), 0 10px 30px -14px rgba(29,29,31,.18);
+  }
+
+  /* ---------- consent ---------- */
+  .legal-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:30px}
+  @media(max-width:760px){.legal-cols{grid-template-columns:1fr}}
+  .legal{padding:22px 24px;max-height:300px;overflow-y:auto}
+  .legal h3{font-size:14px;font-weight:600;letter-spacing:.02em;margin-bottom:12px;display:flex;gap:10px;align-items:baseline}
+  .legal h3 .n{font-family:var(--mono);font-size:11px;color:var(--teal)}
+  .legal li{font-size:13.5px;line-height:1.6;color:var(--muted);margin:0 0 10px 16px}
+  .legal p.more{font-size:12px;color:#8a8a90;margin-top:8px}
+  .consent-row{display:flex;align-items:center;gap:14px;margin-top:26px}
+  .ringbtn{position:relative;display:inline-flex}
+  .ringbtn svg{position:absolute;inset:-5px;width:calc(100% + 10px);height:calc(100% + 10px);pointer-events:none}
+  .ringbtn circle{fill:none;stroke:var(--teal);stroke-width:1.5;opacity:.9}
+  .quietnote{font-size:12.5px;color:#8a8a90;margin-top:18px}
+
+  /* ---------- assist (embedded AWS) ---------- */
+  .assist{display:grid;grid-template-columns:280px 1fr;gap:20px;margin-top:28px}
+  @media(max-width:820px){.assist{grid-template-columns:1fr}}
+  .rail{border-left:1px solid var(--hairline);padding-left:0}
+  .rail ol{list-style:none}
+  .rail li{display:flex;gap:14px;padding:13px 0 13px 18px;margin-left:-1px;border-left:1px solid transparent}
+  .rail .dot{
+    width:24px;height:24px;flex:none;border-radius:50%;border:1.5px solid var(--hairline2);
+    display:grid;place-items:center;font-family:var(--mono);font-size:11px;color:var(--muted);
+    transition:all .35s var(--ease-snap);
+  }
+  .rail li.on{border-left-color:var(--teal)}
+  .rail li.on .dot{border-color:var(--teal);color:var(--teal);box-shadow:0 0 14px -2px rgba(100,210,255,.55)}
+  .rail li.done .dot{border-color:var(--ok);background:var(--ok);color:#04270f}
+  .rail h4{font-size:14px;font-weight:600}
+  .rail li.on h4{color:var(--ink)} .rail h4{color:var(--muted)}
+  .rail p{font-size:12.5px;color:#8a8a90;line-height:1.5;margin-top:3px;max-width:26ch}
+  .viewport{position:relative;border-radius:12px;border:1px double rgba(30,40,60,.14);overflow:hidden;background:#f7f9fc}
+  .vhead{display:flex;align-items:center;gap:9px;padding:10px 14px;border-bottom:1px solid var(--hairline);background:rgba(30,40,60,.04)}
+  .vhead svg{width:11px;height:13px}
+  .vhead .url{font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.03em}
+  .vbody{padding:34px 38px;min-height:260px}
+  .ghost{max-width:330px;margin:0 auto}
+  .ghost .gh-title{font-size:16px;font-weight:600;color:#3a3a3f;margin-bottom:18px}
+  .ghost label{display:block;font-size:11.5px;color:#8a8a90;margin:14px 0 6px}
+  .ghost .gfield{height:38px;border:1px solid rgba(30,40,60,.14);border-radius:8px;background:#ffffff}
+  .ghost .gbtn{margin-top:20px;height:38px;border-radius:8px;background:rgba(30,40,60,.08);display:grid;place-items:center;font-size:13px;color:#6e6e73}
+  .vnote{position:absolute;bottom:12px;left:0;right:0;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:#9a9aa0}
+  .vp-brackets i{position:absolute;width:18px;height:18px;border:2px solid var(--teal);opacity:0;transition:opacity .3s}
+  .vp-brackets i:nth-child(1){top:8px;left:8px;border-right:none;border-bottom:none}
+  .vp-brackets i:nth-child(2){top:8px;right:8px;border-left:none;border-bottom:none}
+  .vp-brackets i:nth-child(3){bottom:8px;left:8px;border-right:none;border-top:none}
+  .vp-brackets i:nth-child(4){bottom:8px;right:8px;border-left:none;border-top:none}
+  .viewport.locked .vp-brackets i{opacity:1}
+
+  /* ---------- fields ---------- */
+  .fieldwrap{position:relative;margin-top:6px}
+  .fld{
+    width:100%;font-family:var(--mono);font-size:14px;color:var(--ink);
+    background:rgba(255,255,255,.04);border:1px double rgba(30,40,60,.14);
+    border-radius:10px;padding:13px 15px;letter-spacing:.02em;
+    transition:border-color .2s,box-shadow .2s;
+  }
+  .fld:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(10,132,255,.14)}
+  .fld::placeholder{color:#9a9aa0}
+  .flabel{font-size:12.5px;font-weight:600;margin:20px 0 0}
+  .fhint{font-size:12px;color:#8a8a90;margin-top:7px}
+  .fb i{position:absolute;width:12px;height:12px;border:1.5px solid var(--ok);opacity:0;transition:all .35s var(--ease-snap)}
+  .fb i:nth-child(1){top:-4px;left:-4px;border-right:none;border-bottom:none}
+  .fb i:nth-child(2){top:-4px;right:-4px;border-left:none;border-bottom:none}
+  .fb i:nth-child(3){bottom:-4px;left:-4px;border-right:none;border-top:none}
+  .fb i:nth-child(4){bottom:-4px;right:-4px;border-left:none;border-top:none}
+  .fieldwrap.locked .fb i{opacity:1;transform:translate(0,0)}
+  .okline{display:none;align-items:center;gap:8px;font-size:12.5px;color:var(--ok);margin-top:10px}
+  .okline svg{width:12px;height:12px}
+  .okline.show{display:flex}
+
+  /* ---------- config ---------- */
+  .cfg{padding:30px 32px;margin-top:26px}
+  .cfg .row2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:700px){.cfg .row2{grid-template-columns:1fr}}
+  .ufield{width:100%;font-family:inherit;font-size:15px;color:var(--ink);
+    background:rgba(255,255,255,.04);border:1px double rgba(30,40,60,.14);
+    border-radius:10px;padding:12px 14px;transition:border-color .2s,box-shadow .2s}
+  .ufield:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(10,132,255,.14)}
+  select.ufield{appearance:none}
+  .togglerow{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-top:1px solid var(--hairline);margin-top:6px}
+  .togglerow h4{font-size:14.5px;font-weight:600}
+  .togglerow p{font-size:12.5px;color:#8a8a90;margin-top:2px;max-width:44ch}
+  .tgl{position:relative;width:44px;height:26px;border-radius:980px;border:none;background:rgba(30,40,60,.18);transition:background .2s;flex:none;margin-left:20px}
+  .tgl::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .3s var(--ease-snap)}
+  .tgl[aria-checked="true"]{background:var(--ok)}
+  .tgl[aria-checked="true"]::after{transform:translateX(18px)}
+  .live-hint{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:#8a8a90;margin-top:16px}
+  .live-hint b{color:var(--teal);font-weight:500}
+
+  /* ---------- review ---------- */
+  .manifest{margin-top:28px;border-top:1px solid var(--hairline)}
+  .mrow{display:flex;justify-content:space-between;align-items:center;padding:13px 4px;border-bottom:1px solid var(--hairline);font-size:14px}
+  .mrow .what{font-weight:600}
+  .mrow .spec{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .costcard{margin-top:26px;padding:24px 28px;position:relative;overflow:hidden}
+  .costcard::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--caution),transparent);opacity:.6}
+  .costcard .clabel{font-size:12px;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+  .costcard .figure{font-size:42px;font-weight:700;letter-spacing:-.03em}
+  .costcard .breakdown{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:10px;line-height:1.7}
+  .holdbtn{position:relative;overflow:visible}
+  .holdbtn .fill{position:absolute;inset:-1px;border-radius:980px;border:1.5px solid var(--teal);
+    clip-path:inset(0 100% 0 0 round 980px);pointer-events:none}
+  .holdhint{font-size:11.5px;color:#8a8a90;margin-top:10px;text-align:right}
+
+  /* ---------- theater ---------- */
+  #s-theater .inner{max-width:860px;padding-top:26vh}
+  .fstop{display:flex;justify-content:center;gap:26px;align-items:baseline;margin-top:2px;font-family:var(--mono)}
+  .fstop .f{font-size:26px;color:var(--ink);font-weight:500}
+  .fstop .t{font-size:12px;color:var(--muted);letter-spacing:.08em}
+  .simtag{position:absolute;top:18px;right:40px;font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:#8a8a90;border:1px solid var(--hairline);border-radius:6px;padding:4px 9px}
+  .feed{margin:30px auto 0;max-width:560px;font-family:var(--mono);font-size:12px;line-height:2.1;color:var(--muted)}
+  .feed div{opacity:0;transform:translateY(8px);transition:opacity .4s var(--ease-out),transform .5s var(--ease-out)}
+  .feed div.show{opacity:1;transform:none}
+  .feed .ok{color:var(--ok)}
+  .feed .ts{color:#9a9aa0;margin-right:14px}
+  .tcta{text-align:center;margin-top:34px;min-height:50px}
+  .tcta .btn{opacity:0}
+  .tcta .btn.show{animation:rise .6s var(--ease-snap) both}
+
+  /* ---------- done ---------- */
+  #s-done .inner{max-width:640px;text-align:center;padding-top:30vh}
+  #s-done h1{font-size:clamp(60px,9vw,110px);font-weight:700;letter-spacing:-.035em}
+  #s-done .sub{color:var(--muted);font-size:16.5px;margin:18px 0 36px;line-height:1.55}
+  .urlrow{display:flex;gap:10px;align-items:stretch;max-width:520px;margin:0 auto}
+  .urlrow .fieldwrap{flex:1;margin:0}
+  .closing{margin-top:44px;font-size:13px;color:#8a8a90;font-style:normal}
+  .nextrows{max-width:520px;margin:34px auto 0;text-align:left}
+  .nextrows button{width:100%;background:none;border:none;border-top:1px solid var(--hairline);
+    padding:15px 4px;display:flex;justify-content:space-between;align-items:center;font-size:14.5px;color:var(--ink)}
+  .nextrows button:last-child{border-bottom:1px solid var(--hairline)}
+  .nextrows .go{color:var(--muted);width:12px;height:12px}
+
+  /* ---------- liquid-glass controls (dark-tuned, from the dashboard v5.2 recipe:
+     low blur + inner light rims + hair-thin edge; kept subtle so the machine-eye
+     aesthetic stays dominant) ---------- */
+  .btn{
+    background:rgba(255,255,255,.40);
+    backdrop-filter:blur(8px) saturate(170%);
+    -webkit-backdrop-filter:blur(8px) saturate(160%);
+    box-shadow:
+      inset 1.5px -1.5px 1px -.5px rgba(255,255,255,1),
+      inset -1.5px 1.5px 1px -.5px rgba(255,255,255,.95),
+      inset 0 0 1.5px rgba(30,40,60,.28);
+  }
+  .btn:hover{background:rgba(255,255,255,.62)}
+  .btn.on-dark{background:rgba(10,132,255,.55);color:#fff;text-shadow:0 1px 2px rgba(0,60,130,.35);
+    box-shadow:
+      inset 1.5px -1.5px 1px -.5px rgba(255,255,255,.38),
+      inset -1.5px 1.5px 1px -.5px rgba(255,255,255,.22),
+      inset 0 0 2px rgba(0,60,130,.4),
+      0 4px 16px -5px rgba(10,132,255,.5)}
+  .btn.on-dark:hover{background:rgba(10,132,255,.68)}
+  .glass{
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.08),
+      inset 1.5px -1.5px 1px -.5px rgba(255,255,255,.14),
+      inset -1.5px 1.5px 1px -.5px rgba(255,255,255,.10);
+  }
+  .fld,.ufield{
+    box-shadow:
+      inset 1px -1px 1px -.5px rgba(255,255,255,.95),
+      inset -1px 1px 1px -.5px rgba(255,255,255,.9),
+      inset 0 0 1.5px rgba(30,40,60,.2);
+  }
+  .tgl{box-shadow:inset 1px -1px 1px -.5px rgba(255,255,255,.25)}
+  .viewport{box-shadow:
+      inset 1.5px -1.5px 1px -.5px rgba(255,255,255,.14),
+      inset -1.5px 1.5px 1px -.5px rgba(255,255,255,.10)}
+
+  /* ---------- consent (checkbox pattern) ---------- */
+  .agree-card{padding:22px 24px;border-radius:14px}
+  .agree-row{display:flex;align-items:flex-start;gap:12px;cursor:pointer}
+  .agree-row input{position:absolute;opacity:0;width:0;height:0}
+  .agree-box{width:22px;height:22px;flex:none;border-radius:7px;margin-top:1px;
+    border:1.5px solid var(--hairline2);background:rgba(255,255,255,.6);
+    display:grid;place-items:center;color:transparent;
+    transition:all .25s var(--ease-snap);
+    box-shadow:inset 1px -1px 1px -.5px rgba(255,255,255,.9)}
+  .agree-box svg{width:12px;height:12px}
+  .agree-row input:checked + .agree-box{background:var(--teal);border-color:var(--teal);color:#fff}
+  .agree-row input:focus-visible + .agree-box{outline:2px solid var(--teal);outline-offset:2px}
+  .agree-text{font-size:14.5px;line-height:1.55;color:var(--ink)}
+  .agree-text a{color:var(--teal);text-decoration:none;border-bottom:1px solid rgba(10,132,255,.35)}
+  .legal-fold{margin-top:14px;border-top:1px solid var(--hairline);padding-top:12px}
+  .legal-fold summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--muted);
+    letter-spacing:.04em;list-style:none}
+  .legal-fold summary::before{content:"+ ";color:var(--teal)}
+  .legal-fold[open] summary::before{content:"\2212 "}
+  .legal-fold li{font-size:13px;line-height:1.6;color:var(--muted);margin:8px 0 0 16px}
+  .legal-fold .more{font-size:11.5px;color:#9a9aa0;margin-top:8px}
+  .legal-fold .fulltext{white-space:pre-wrap;font-size:12px;line-height:1.6;color:var(--muted);
+    max-height:260px;overflow-y:auto;margin-top:10px;padding-right:8px}
+  .vstate{margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--ok)}
+  .vbody-live{display:grid;place-items:center;min-height:260px}
+  .aws-launch{max-width:360px;text-align:center;display:flex;flex-direction:column;gap:16px;align-items:center}
+  .aws-note{font-size:13.5px;line-height:1.6;color:var(--muted)}
+  .aws-sub{font-size:11.5px;color:#9a9aa0}
+  .req{font-size:9.5px;letter-spacing:.1em;color:var(--caution);margin-left:8px;font-weight:600}
+  .field-err{min-height:16px;font-size:12px;color:var(--caution);margin-top:6px}
+
+  @media (prefers-reduced-motion:reduce){
+    .rv,.active .rv,.feed div,.tcta .btn{animation:none!important;transition:none!important;opacity:1!important;transform:none!important}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="atmosphere"></canvas>
+<canvas id="stage"></canvas>
+<canvas id="grain"></canvas>
+
+<div class="titlebar">
+  <div class="wordmark">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#F5F5F7" stroke-width="1">
+      <circle cx="11" cy="11" r="9.5" opacity=".55"/>
+      <g opacity=".8">
+        <line x1="11" y1="2.4" x2="11" y2="6.4"/><line x1="16.6" y1="4.5" x2="14.2" y2="7.7"/>
+        <line x1="19.6" y1="9.6" x2="15.8" y2="10.4"/><line x1="18.4" y1="15.4" x2="15" y2="13.3"/>
+        <line x1="13.7" y1="19.2" x2="12.6" y2="15.4"/><line x1="8.3" y1="19.2" x2="9.4" y2="15.4"/>
+        <line x1="3.6" y1="15.4" x2="7" y2="13.3"/><line x1="2.4" y1="9.6" x2="6.2" y2="10.4"/>
+        <line x1="5.4" y1="4.5" x2="7.8" y2="7.7"/>
+      </g>
+    </svg>
+    ARGUS <span>Setup</span>
+  </div>
+  <a href="#" onclick="exitSetup(); return false">Exit setup</a>
+</div>
+
+<!-- ================= WELCOME ================= -->
+<section class="screen active" id="s-welcome">
+  <div class="hero">
+    <div>
+      <p class="eyebrow rv" style="--i:6">A R G U S</p>
+      <h1 class="rv" style="--i:7">Vision, <span class="grad">deployed.</span></h1>
+      <p class="sub rv" style="--i:8">Train it on anything. Deploy it to your own AWS in one
+        sitting. Argus watches; you hear from it only when it matters.</p>
+      <div class="rv" style="--i:9">
+        <button class="btn" onclick="go('consent')">Begin
+          <svg class="arr" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 6h9M7 2.5 10.5 6 7 9.5"/></svg>
+        </button>
+      </div>
+      <div class="statusline rv" style="--i:10" id="statusline">ENGINE &#183; REKOGNITION CUSTOM LABELS</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CONSENT (standard checkbox pattern) ================= -->
+<section class="screen" id="s-consent">
+  <div class="inner">
+    <p class="eyebrow rv" style="--i:0">BEFORE WE START</p>
+    <h2 class="rv" style="--i:1">One agreement. Plain language.</h2>
+    <p class="lede rv" style="--i:2">You own everything &#8212; the AWS account, the
+      data, the costs. This app touches almost nothing. Details are folded below
+      if you want them.</p>
+
+    <div class="agree-card glass rv" style="--i:3">
+      <label class="agree-row">
+        <input type="checkbox" id="agree-check" onchange="agreeChanged()">
+        <span class="agree-box" aria-hidden="true">
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.2 4.8 9 10 3.4"/></svg>
+        </span>
+        <span class="agree-text">I have read and agree to the
+          <a href="#" onclick="toggleLegal('tos');return false">Terms of Use</a> and the
+          <a href="#" onclick="toggleLegal('privacy');return false">Privacy Policy</a>.</span>
+      </label>
+
+      <details class="legal-fold" id="fold-tos">
+        <summary>Terms of Use</summary>
+        <ul>
+          <li>Argus deploys into <b>your own AWS account</b>. The account, the data,
+            and all AWS costs are yours; AWS bills you directly.</li>
+          <li>The tool automates AWS configuration on your behalf, with your
+            credentials, at your direction &#8212; nothing runs without your action.</li>
+          <li>Detection quality depends on the images you train with. No warranty is
+            made on detection accuracy or uptime.</li>
+          <li>Cost figures shown in this app are estimates, not quotes.</li>
+          <li>Keep your AWS root credentials secure; they are never entered into this app.</li>
+        </ul>
+        <p class="more">Full text ships with the application.</p>
+      </details>
+      <details class="legal-fold" id="fold-privacy">
+        <summary>Privacy Policy</summary>
+        <ul>
+          <li>Your IAM access keys are stored <b>encrypted on this computer only</b>
+            (Windows Credential Manager) and are used solely to deploy.</li>
+          <li>Your payment card and passwords are typed <b>directly into AWS's own
+            pages</b> &#8212; they never pass through us.</li>
+          <li>No telemetry. Nothing is collected, transmitted to the vendor, or sold.</li>
+        </ul>
+        <p class="more">Full text ships with the application.</p>
+      </details>
+    </div>
+
+    <div class="consent-row rv" style="--i:4">
+      <button class="btn on-dark" id="accept-btn" disabled onclick="go('account')">Agree &amp; continue
+        <svg class="arr" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 6h9M7 2.5 10.5 6 7 9.5"/></svg>
+      </button>
+      <button class="back" onclick="declineAndQuit()">Decline &amp; exit</button>
+    </div>
+    <p class="quietnote rv" style="--i:5">Your card and credentials go to AWS directly. They never pass through us.</p>
+  </div>
+</section>
+
+<!-- ================= ACCOUNT (embedded assist) ================= -->
+<section class="screen" id="s-account">
+  <div class="inner" style="max-width:920px">
+    <p class="eyebrow rv" style="--i:0">STEP 1 &#183; YOUR AWS ACCOUNT</p>
+    <h2 class="rv" style="--i:1">AWS, without leaving Argus.</h2>
+    <p class="lede rv" style="--i:2">AWS's own pages open right here. You type your
+      details into <span class="mono" style="font-size:14px">amazon.com</span> itself
+      &#8212; Argus guides, and never sees what you enter.</p>
+
+    <div class="assist">
+      <nav class="rail rv" style="--i:3">
+        <ol id="acct-rail">
+          <li class="on"><span class="dot">1</span><div><h4>Create the account</h4><p>Work email, strong password.</p></div></li>
+          <li><span class="dot">2</span><div><h4>Verify your email</h4><p>AWS sends a code.</p></div></li>
+          <li><span class="dot">3</span><div><h4>Add a payment card</h4><p>Typed into AWS directly. A ~US$1 hold verifies it.</p></div></li>
+          <li><span class="dot">4</span><div><h4>Phone + free Basic plan</h4><p>One SMS code, then choose Basic.</p></div></li>
+        </ol>
+      </nav>
+      <div class="viewport rv" style="--i:4" id="acct-viewport">
+        <span class="vp-brackets"><i></i><i></i><i></i><i></i></span>
+        <div class="vhead">
+          <svg viewBox="0 0 11 13" fill="none" stroke="#248a3d" stroke-width="1.4"><rect x="1" y="5.5" width="9" height="6.5" rx="1.5"/><path d="M3 5.5V4a2.5 2.5 0 0 1 5 0v1.5"/></svg>
+          <span class="url" id="aws-url">portal.aws.amazon.com/billing/signup</span>
+          <span class="vstate" id="aws-state">SECURE &#183; HOSTED BY AWS</span>
+        </div>
+        <div class="vbody vbody-live">
+          <div class="aws-launch">
+            <p class="aws-note">AWS&#8217;s own sign-up page opens in a <b>separate secure
+              window</b> right beside this one. Your email, password and payment card are
+              typed directly into AWS &#8212; Argus never sees or stores them.</p>
+            <button class="btn on-dark" id="aws-open-btn" onclick="openAwsClicked()">Open the AWS window
+              <svg class="arr" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 6h9M7 2.5 10.5 6 7 9.5"/></svg>
+            </button>
+            <p class="aws-sub" id="aws-hint">The guidance rail on the left follows your progress automatically.</p>
+          </div>
+        </div>
+        <div class="vnote">CARD &amp; PASSWORDS GO TO AWS DIRECTLY &#8212; NEVER THROUGH ARGUS</div>
+      </div>
+    </div>
+
+    <div class="nav rv" style="--i:5">
+      <button class="back" onclick="go('consent')">Back</button>
+      <a href="#" onclick="go('keys'); return false"
+         style="align-self:center;margin-left:auto;margin-right:16px;color:var(--muted);font-size:13px">
+        I already have an account &#8212; skip</a>
+      <button class="btn" onclick="acctAdvance()">Step complete
+        <svg class="arr" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 6h9M7 2.5 10.5 6 7 9.5"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= KEYS ================= -->
+<section class="screen" id="s-keys">
+  <div class="inner" style="max-width:920px">
+    <p class="eyebrow rv" style="--i:0">STEP 2 &#183; ACCESS KEYS</p>
+    <h2 class="rv" style="--i:1">Create Argus its own user.</h2>
+    <p class="lede rv" style="--i:2">A fresh account has no users yet. In the AWS
+      window, create one dedicated user for Argus &#8212; about a minute &#8212;
+      then paste its two key values here. They are encrypted into this computer's
+      credential store and go nowhere else. Never use root keys.</p>
+
+    <div class="assist">
+      <nav class="rail rv" style="--i:3">
+        <ol id="keys-rail">
+          <li class="on"><span class="dot">1</span><div><h4>Create the user</h4>
+            <p>IAM &#8594; Users &#8594; Create user. Name it
+            <span class="mono">deployer</span>. Console access: leave OFF.</p></div></li>
+          <li><span class="dot">2</span><div><h4>Give it deploy rights</h4>
+            <p>Attach policies directly &#8594; <span class="mono">AdministratorAccess</span>.
+            Argus builds your stack with it; you can delete the user afterwards.</p></div></li>
+          <li><span class="dot">3</span><div><h4>Create the access key</h4>
+            <p>Open <span class="mono">deployer</span> &#8594; Security credentials &#8594;
+            Create access key &#8594; pick &#8220;Command Line Interface (CLI)&#8221;,
+            tick the confirmation box &#8594; Create.</p></div></li>
+          <li><span class="dot">4</span><div><h4>Paste both values</h4>
+            <p>AWS shows the secret ONCE, on that final page &#8212; copy both
+            values into the fields on the right before closing it.</p></div></li>
+        </ol>
+      </nav>
+      <div>
+        <p class="aws-note rv" style="--i:3;color:var(--muted);font-size:13px;margin-bottom:10px">
+          The IAM console is open in the secure AWS window beside this one.
+          <a href="javascript:void(0)" onclick="openAws('iam-keys')" style="color:var(--teal)">Reopen it</a>
+          if you closed it.</p>
+        <div class="flabel rv" style="--i:3">Access key ID</div>
+        <div class="fieldwrap rv" style="--i:3" id="fw-ak">
+          <span class="fb"><i></i><i></i><i></i><i></i></span>
+          <input class="fld" id="ak" placeholder="AKIA................" spellcheck="false" autocomplete="off" oninput="checkKeys()">
+        </div>
+        <div class="flabel rv" style="--i:4">Secret access key</div>
+        <div class="fieldwrap rv" style="--i:4" id="fw-sk">
+          <span class="fb"><i></i><i></i><i></i><i></i></span>
+          <input class="fld" id="sk" type="password" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" autocomplete="off" oninput="checkKeys()">
+        </div>
+        <div class="okline rv" style="--i:5" id="keys-ok">
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.2 4.8 9 10 3.4"/></svg>
+          Verified &#183; encrypted in Windows Credential Manager
+        </div>
+      </div>
+    </div>
+
+    <div class="nav rv" style="--i:6">
+      <button class="back" onclick="go('account')">Back</button>
+      <button class="btn" id="keys-next" disabled onclick="keysContinue()">Continue
+        <svg class="arr" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 6h9M7 2.5 10.5 6 7 9.5"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CONFIG ================= -->
+<section class="screen" id="s-config">
+  <div class="inner">
+    <p class="eyebrow rv" style="--i:0">STEP 3 &#183; CONFIGURATION</p>
+    <h2 class="rv" style="--i:1">Tell Argus what to watch.</h2>
+    <p class="lede rv" style="--i:2">Type your target and watch the field behind this
+      panel start reading it &#8212; that is your model, demonstrated before it exists.</p>
+
+    <div class="glass cfg rv" style="--i:3">
+      <div class="row2">
+        <div>
+          <div class="flabel" style="margin-top:0">Deployment name</div>
+          <div class="fieldwrap"><input class="ufield" id="pname" value="Orchid Nursery &#8212; Sentosa" oninput="validateConfig()"></div>
+        </div>
+        <div>
+          <div class="flabel" style="margin-top:0">Region</div>
+          <div class="fieldwrap">
+            <select class="ufield" id="region">
+              <option>Singapore (ap-southeast-1)</option>
+              <option selected>N. Virginia (us-east-1)</option>
+              <option>Frankfurt (eu-central-1)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="flabel">Detection target</div>
+      <div class="fieldwrap"><input class="ufield" id="target" value="orchid-beetle" oninput="setTarget(this.value);validateConfig()"></div>
+      <p class="live-hint">FIELD IS LIVE &#8212; NOW ACQUIRING <b id="target-echo">ORCHID-BEETLE</b></p>
+
+      <div class="flabel">Alert email <span class="req">required</span></div>
+      <div class="fieldwrap"><input class="ufield" id="email" type="email"
+        placeholder="you@company.com" oninput="validateConfig()"></div>
+      <p class="fhint">Detection alerts and the AWS sender identity use this address.
+        A verification email arrives after deployment.</p>
+      <p class="field-err" id="email-err"></p>
+
+      <div class="togglerow" style="margin-top:22px">
+        <div><h4>Live video streaming</h4><p>Watch cameras in real time from the dashboard.</p></div>
+        <button class="tgl" role="switch" aria-checked="true" aria-label="Live video streaming" onclick="tgl(this)"></button>
+      </div>
+      <div class="togglerow">
+        <div><h4>Email alerts</h4><p>A message the moment something is detected.</p></div>
+        <button class="tgl" role="switch" aria-checked="true" aria-label="Email alerts" onclick="tgl(this)"></button>
+      </div>
+    </div>
+
+    <div class="nav rv" style="--i:4">
+      <button class="back" onclick="go('keys')">Back</button>
+      <button class="btn" id="config-next" disabled onclick="configContinue()">Continue
+        <svg class="arr" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 6h9M7 2.5 10.5 6 7 9.5"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= REVIEW ================= -->
+<section class="screen" id="s-review">
+  <div class="inner">
+    <p class="eyebrow rv" style="--i:0">STEP 4 &#183; REVIEW</p>
+    <h2 class="rv" style="--i:1">The manifest.</h2>
+    <p class="lede rv" style="--i:2">Everything below is created in your account when
+      you deploy &#8212; and nothing has been created yet.</p>
+
+    <div class="manifest rv" style="--i:3">
+      <div class="mrow"><span class="what">Storage</span><span class="spec">3 &#215; S3 &#8212; frames &#183; processing &#183; dashboard</span></div>
+      <div class="mrow"><span class="what">Database</span><span class="spec">4 &#215; DynamoDB &#8212; cameras &#183; detections &#183; config &#183; activity</span></div>
+      <div class="mrow"><span class="what">Functions</span><span class="spec">5 &#215; Lambda &#8212; detect &#183; api &#183; schedule &#183; stream &#183; cost-guard</span></div>
+      <div class="mrow"><span class="what">Vision engine</span><span class="spec">Rekognition project &#8212; empty, trained on your images</span></div>
+      <div class="mrow"><span class="what">Secure API</span><span class="spec">21 routes &#183; sign-in required</span></div>
+      <div class="mrow"><span class="what">Dashboard</span><span class="spec">HTTPS &#183; your private address</span></div>
+      <div class="mrow"><span class="what">Alerts</span><span class="spec">SES &#8212; verified sender, your inbox</span></div>
+    </div>
+
+    <div class="glass costcard rv" style="--i:4">
+      <div class="clabel">WHAT IT COSTS &#8212; THE ONLY TIME WE MENTION IT</div>
+      <div class="figure grad">&#8776; $0<span style="font-size:18px;color:var(--muted);-webkit-text-fill-color:var(--muted)"> / month idle</span></div>
+      <div class="breakdown">TRAINING &#8776; $14 PER RUN (3&#8211;4 H) &#183; DETECTION $4/H WHILE RUNNING &#183; A WATCHDOG STOPS FORGOTTEN MODELS</div>
+    </div>
+
+    <div class="nav rv" style="--i:5">
+      <button class="back" onclick="go('config')">Back</button>
+      <div style="text-align:right">
+        <button class="btn holdbtn" id="deploy-btn">
+          <span class="fill" id="hold-fill"></span>
+          Hold to deploy
+        </button>
+        <div class="holdhint">Press and hold &#8212; releasing early cancels.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= THEATER ================= -->
+<section class="screen" id="s-theater">
+  <span class="simtag">DESIGN PREVIEW &#183; SIMULATED EVENTS</span>
+  <div class="inner">
+    <div class="fstop rv" style="--i:0">
+      <span class="f" id="fstop">f/16</span>
+      <span class="t" id="tplus">T+00:00.0</span>
+    </div>
+    <div class="feed" id="feed"></div>
+    <div class="tcta">
+      <button class="btn" id="theater-next" onclick="go('done')">See your system
+        <svg class="arr" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 6h9M7 2.5 10.5 6 7 9.5"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DONE ================= -->
+<section class="screen" id="s-done">
+  <div class="inner">
+    <h1 class="rv" style="--i:0"><span class="grad">Live.</span></h1>
+    <p class="sub rv" style="--i:1">Deployed clean into your account. Confirm your
+      alert email, feed it two hundred photos, and Argus opens its eyes.</p>
+    <div class="urlrow rv" style="--i:2">
+      <div class="fieldwrap" id="fw-url">
+        <span class="fb"><i></i><i></i><i></i><i></i></span>
+        <input class="fld" readonly value="" placeholder="deploying&#8230; your dashboard URL appears here" id="dash-url">
+      </div>
+      <button class="btn" onclick="copyUrl(this)">Copy</button>
+    </div>
+    <div class="nextrows rv" style="--i:3">
+      <button onclick="openAws('ses')">Verify your alert email
+        <svg class="go" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2l4.5 4L4 10"/></svg></button>
+      <button onclick="go('train')">Train your model &#8212; from a folder of labeled photos
+        <svg class="go" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2l4.5 4L4 10"/></svg></button>
+      <button onclick="runSystemCheck()">Run a system check &#8212; prove every piece is live
+        <svg class="go" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2l4.5 4L4 10"/></svg></button>
+    </div>
+    <div id="syscheck" style="display:none;margin-top:18px;border:1px solid var(--hairline);border-radius:12px;padding:16px 18px;max-height:300px;overflow:auto;font-family:var(--mono,monospace);font-size:12.5px;line-height:1.9"></div>
+
+    <!-- Dashboard accounts: a fresh pool has ZERO users — nobody can sign in
+         until the operator creates the first one right here. -->
+    <div class="rv" style="--i:4;margin-top:26px;border:1px solid var(--hairline);border-radius:12px;padding:18px 20px">
+      <div style="font-weight:600;font-size:15px;margin-bottom:2px">Dashboard accounts</div>
+      <div style="color:var(--muted);font-size:12.5px;margin-bottom:12px">
+        Your dashboard starts with no accounts — create the first one to sign in.
+        Passwords go straight to AWS Cognito.</div>
+      <div id="user-list" style="font-family:var(--mono,monospace);font-size:12.5px;line-height:2;margin-bottom:10px;color:var(--muted)">&#8230;</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input class="fld" id="nu-email" placeholder="operator@company.com" style="flex:2;min-width:180px">
+        <input class="fld" id="nu-pass" type="password" placeholder="password (min 8, a-z + digit)" style="flex:2;min-width:180px">
+        <button class="btn" style="padding:10px 18px" onclick="addUser()">Add account</button>
+      </div>
+      <div id="user-msg" style="font-size:12.5px;margin-top:8px;color:var(--muted)"></div>
+    </div>
+
+    <!-- Danger zone: full teardown -->
+    <div class="rv" style="--i:5;margin-top:16px;border:1px solid rgba(200,60,40,.35);border-radius:12px;padding:18px 20px">
+      <div style="font-weight:600;font-size:15px;color:#b3261e;margin-bottom:2px">Danger zone</div>
+      <div style="color:var(--muted);font-size:12.5px;margin-bottom:12px">
+        Delete this deployment: removes every resource Argus created in your AWS
+        account (dashboard, database, functions, sign-in, storage &#8212; including
+        all images and detections). Cannot be undone.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input class="fld" id="dz-confirm" placeholder="type the deployment id to confirm" style="flex:2;min-width:220px">
+        <button class="btn" style="padding:10px 18px;background:#b3261e;border-color:#b3261e" onclick="destroyDeployment()">Delete deployment</button>
+      </div>
+      <div id="destroy-log" style="display:none;margin-top:12px;max-height:240px;overflow:auto;font-family:var(--mono,monospace);font-size:12px;line-height:1.9"></div>
+
+      <!-- Step 2: closing the AWS ACCOUNT itself. Root + console only, by
+           AWS's design — so this is a guided flow, never an automated one. -->
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(200,60,40,.2)">
+        <div style="font-weight:600;font-size:13.5px;margin-bottom:4px">Also closing the AWS account itself?</div>
+        <div style="color:var(--muted);font-size:12.5px;line-height:1.6;margin-bottom:10px">
+          Run the teardown above first, then close the account on AWS&#8217;s own page:
+          sign in as the <b>root user</b> (the email you registered with &#8212; not the
+          <span class="mono">deployer</span> user), scroll to &#8220;Close account&#8221;,
+          tick the confirmations, close. AWS provides no API for this &#8212; it is a
+          deliberate human-only action. You can reopen within 90 days; after that the
+          account and any final ~US$1 card hold are gone for good.</div>
+        <button class="btn" style="padding:9px 16px" onclick="openAws('close-account')">Open the account closure page
+          <svg class="arr" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 6h9M7 2.5 10.5 6 7 9.5"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <p class="closing rv" style="--i:6">Argus is watching. You'll hear from it only when it matters.</p>
+  </div>
+</section>
+
+<!-- ================= TRAIN (in-app training pipeline) ================= -->
+<section class="screen" id="s-train">
+  <div class="inner" style="max-width:760px">
+    <p class="eyebrow rv" style="--i:0">TRAIN &#183; THE VISION ENGINE</p>
+    <h2 class="rv" style="--i:1">Teach Argus what to see.</h2>
+    <p class="lede rv" style="--i:2">Pick a folder of labeled photos. Argus checks
+      them, converts the labels, uploads, trains, and wires the finished model into
+      your cameras &#8212; nothing to do in the AWS console.</p>
+    <div class="rv" style="--i:2;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <p class="fhint" id="tr-current" style="display:none;margin:0"></p>
+      <button class="btn" id="tr-rollback-top" style="display:none;padding:8px 16px;font-size:13px"
+              onclick="trRollback()">Roll back to the previous model</button>
+    </div>
+
+    <!-- 1: data -->
+    <div class="glass cfg rv" style="--i:3" id="tr-data">
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <button class="btn" id="tr-pick-btn" onclick="trPick()">Choose data folder</button>
+        <span class="mono" id="tr-path" style="font-size:12px;color:var(--muted);word-break:break-all"></span>
+      </div>
+      <p class="fhint">Label your photos in any YOLO-format tool (Roboflow&#8217;s free plan
+        works), export, and pick the folder: <span class="mono">images/</span> +
+        <span class="mono">labels/</span> (YOLOv8) or <span class="mono">train/images</span> +
+        <span class="mono">train/labels</span> (Roboflow). Training again later? Pick only
+        NEW photos &#8212; earlier uploads are already in the engine.</p>
+      <div id="tr-report" style="display:none;margin-top:14px;border-top:1px solid var(--hairline);padding-top:14px">
+        <div class="mono" id="tr-counts" style="font-size:12.5px;color:var(--muted);line-height:2"></div>
+        <div id="tr-classes" style="margin-top:8px"></div>
+        <div id="tr-warnings" style="font-size:12.5px;color:var(--caution);line-height:1.7;margin-top:8px"></div>
+        <div id="tr-blockers" style="font-size:13px;color:#b3261e;font-weight:600;line-height:1.7;margin-top:8px"></div>
+      </div>
+    </div>
+
+    <!-- 2: cost gate -->
+    <div class="glass costcard rv" id="tr-gate" style="display:none;margin-top:18px">
+      <div class="clabel">BEFORE TRAINING &#8212; THE COST</div>
+      <div class="figure grad" id="tr-cost">&#8776; $0</div>
+      <div class="breakdown" id="tr-cost-detail"></div>
+      <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;align-items:center">
+        <input class="fld" id="tr-confirm" placeholder="type TRAIN to confirm" spellcheck="false"
+               autocomplete="off" style="flex:1;min-width:180px" oninput="trGateCheck()">
+        <button class="btn on-dark" id="tr-start" disabled onclick="trStart()">Start training
+          <svg class="arr" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 6h9M7 2.5 10.5 6 7 9.5"/></svg>
+        </button>
+      </div>
+      <p class="fhint">Billed by AWS to your account. You can close this app once
+        training starts &#8212; it continues in the cloud and Argus re-attaches on relaunch.</p>
+    </div>
+
+    <!-- 3: progress -->
+    <div id="tr-run" style="display:none;margin-top:18px">
+      <div class="assist" style="margin-top:0">
+        <nav class="rail">
+          <ol id="tr-rail">
+            <li><span class="dot">1</span><div><h4>Check the data</h4></div></li>
+            <li><span class="dot">2</span><div><h4>Convert labels</h4></div></li>
+            <li><span class="dot">3</span><div><h4>Upload images</h4></div></li>
+            <li><span class="dot">4</span><div><h4>Load the vision engine</h4></div></li>
+            <li><span class="dot">5</span><div><h4>Train</h4><p id="tr-elapsed"></p></div></li>
+            <li><span class="dot">6</span><div><h4>Wire into cameras</h4></div></li>
+          </ol>
+        </nav>
+        <div>
+          <div class="feed" id="tr-feed" style="margin:0;max-width:none;max-height:340px;overflow-y:auto"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4: done -->
+    <div class="glass cfg" id="tr-result" style="display:none;margin-top:18px">
+      <div class="clabel" style="font-size:12px;letter-spacing:.1em;color:var(--muted)">MODEL TRAINED &amp; WIRED IN</div>
+      <div class="figure grad" id="tr-f1" style="font-size:42px;font-weight:700;letter-spacing:-.03em">F1 &#8212;</div>
+      <p class="fhint" id="tr-f1-note" style="max-width:56ch"></p>
+      <p class="fhint" style="max-width:56ch">Detection is <b>not</b> started automatically
+        &#8212; running the model costs US$4/hour. Start it from your dashboard when you
+        are ready; the cost guard stops forgotten models.</p>
+      <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn" id="tr-again" onclick="trReset()">Train a new version</button>
+        <button class="btn" id="tr-rollback" style="display:none" onclick="trRollback()">Roll back to the previous model</button>
+      </div>
+      <p class="fhint" id="tr-rollback-msg"></p>
+    </div>
+
+    <div class="nav rv" style="--i:4">
+      <button class="back" onclick="go('done')">Back to summary</button>
+    </div>
+  </div>
+</section>
+
+<script>
+"use strict";
+/* ===================== APERTURE ENGINE ===================== */
+const cv = document.getElementById('stage');
+const cx2d = cv.getContext('2d');
+const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let W = 0, H = 0;
+function resize() {
+  W = innerWidth; H = innerHeight;
+  cv.width = W * DPR; cv.height = H * DPR;
+  cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  cx2d.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+resize(); addEventListener('resize', resize);
+
+/* aperture state (lerped toward per-screen targets) */
+const AP = { x: .5, y: .42, r: 0, open: 0, alpha: 0, field: 0,
+             tx: .5, ty: .42, tr: 260, topen: .84, talpha: 1, tfield: 1 };
+const PRESETS = {
+  welcome: { x: .5, y: .40, r: () => Math.min(H * .30, 270), open: .84, alpha: 1, field: 1 },
+  consent: { x: .5, y: .42, r: () => 0, open: .84, alpha: 0, field: 0 },
+  account: { x: .5, y: .42, r: () => 0, open: .84, alpha: 0, field: 0 },
+  keys:    { x: .5, y: .42, r: () => 0, open: .84, alpha: 0, field: 0 },
+  config:  { x: .72, y: .5, r: () => Math.min(H * .34, 300), open: .84, alpha: .5, field: .8 },
+  review:  { x: .5, y: .42, r: () => 0, open: .84, alpha: 0, field: 0 },
+  theater: { x: .5, y: .34, r: () => Math.min(H * .21, 190), open: .08, alpha: 1, field: .9 },
+  done:    { x: .5, y: .38, r: () => Math.min(H * .24, 220), open: 1, alpha: 1, field: 1 },
+  train:   { x: .76, y: .5, r: () => Math.min(H * .28, 250), open: .84, alpha: .45, field: .8 },
+};
+
+/* particles */
+const N = REDUCED ? 90 : 240;
+const parts = [];
+for (let i = 0; i < N; i++) {
+  const z = .2 + Math.random() * .8;
+  parts.push({ u: Math.random() * 2 - 1, v: Math.random() * 2 - 1, z,
+    a: Math.random() * Math.PI * 2, sp: (4 + Math.random() * 6) / 60,
+    teal: Math.random() < .06, violet: Math.random() < .02 });
+}
+let mouseX = 0, mouseY = 0, mx = 0, my = 0;
+addEventListener('mousemove', e => {
+  mouseX = (e.clientX / W - .5) * 2; mouseY = (e.clientY / H - .5) * 2;
+});
+
+/* lock-on */
+const lock = { active: false, t: 0, x: 0, y: 0, w: 0, label: '', conf: '' };
+let lockTimer = 2000;
+let targetLabel = 'TARGET';
+function setTarget(v) {
+  targetLabel = (v || 'TARGET').trim().toUpperCase() || 'TARGET';
+  const echo = document.getElementById('target-echo');
+  if (echo) echo.textContent = targetLabel;
+}
+function fireLock(labelOverride) {
+  const r = AP.r * AP.open * .5;
+  const ang = Math.random() * Math.PI * 2, d = Math.random() * r * .5;
+  lock.active = true; lock.t = 0;
+  lock.x = AP.x * W + Math.cos(ang) * d;
+  lock.y = AP.y * H + Math.sin(ang) * d;
+  lock.w = 34 + Math.random() * 26;
+  lock.label = labelOverride || targetLabel;
+  lock.conf = (91 + Math.random() * 8.2).toFixed(1) + '%';
+}
+
+/* shutter: random snaps + user-click snaps; drives blades AND the shader flash
+   through window.__shutterPulse so light and mechanics stay in sync. */
+const SH = { t: -1, next: 5 + Math.random() * 7 };
+window.__shutterPulse = 0;
+function snapFactor() {
+  if (SH.t < 0) return 1;
+  const t = SH.t;
+  if (t < 0.09) return 1 - (t / 0.09) * 0.94;                 // slam shut
+  if (t < 0.16) return 0.06;                                   // hold
+  if (t < 0.55) { const p = (t - 0.16) / 0.39;                 // spring back
+    return 0.06 + (1 - 0.06) * (1 - Math.pow(1 - p, 3)); }
+  return 1;
+}
+let audioCtx = null;
+function shutterSound() {
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const t = audioCtx.currentTime;
+    [0, 0.07].forEach((off, k) => {
+      const len = Math.floor(audioCtx.sampleRate * 0.03);
+      const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2);
+      const src = audioCtx.createBufferSource(); src.buffer = buf;
+      const g = audioCtx.createGain();
+      g.gain.value = k === 0 ? 0.12 : 0.07;
+      src.connect(g); g.connect(audioCtx.destination);
+      src.start(t + off);
+    });
+  } catch (e) {}
+}
+function triggerShutter(userClick) {
+  if (REDUCED || AP.alpha < 0.5) return;
+  SH.t = 0;
+  SH.next = 6 + Math.random() * 9;
+  if (userClick) shutterSound();
+}
+document.addEventListener('pointerdown', (e) => {
+  if (AP.alpha < 0.5) return;
+  const dx = e.clientX - AP.x * W, dy = e.clientY - AP.y * H;
+  if (Math.hypot(dx, dy) <= AP.r * 1.05) triggerShutter(true);
+});
+
+let ringProg = REDUCED ? 1 : 0;
+let breath = 0;
+let last = performance.now();
+
+function draw(now) {
+  const dt = Math.min((now - last) / 1000, .05); last = now;
+  /* lerp state */
+  const L = REDUCED ? 1 : .07;
+  AP.x += (AP.tx - AP.x) * L; AP.y += (AP.ty - AP.y) * L;
+  AP.r += (AP.tr - AP.r) * L; AP.open += (AP.topen - AP.open) * L;
+  AP.alpha += (AP.talpha - AP.alpha) * L; AP.field += (AP.tfield - AP.field) * L;
+  mx += (mouseX - mx) * .06; my += (mouseY - my) * .06;
+  if (ringProg < 1) ringProg = Math.min(1, ringProg + dt / .8);
+  breath += dt;
+  // shutter clock: advance an active snap; count down to the next random one
+  if (SH.t >= 0) { SH.t += dt; if (SH.t > 0.6) SH.t = -1; }
+  else if (!REDUCED && AP.alpha > 0.5) {
+    SH.next -= dt; if (SH.next <= 0) triggerShutter(false);
+  }
+  // ONE source of truth for the snap. The blades, the light-field dimming and the
+  // flash are ALL derived from snapFactor(), so they physically cannot drift out
+  // of phase. (Bug through 2026-07-15: the flash ran on its own 0.35 s linear
+  // decay — peaking at t=0 while the blades were still wide open — and the shader
+  // ignored the snap entirely, so the light never dimmed when the shutter shut.)
+  const snap = snapFactor();
+  window.__shutterSnap = snap;                    // 1 = wide open, ~0.06 = shut
+  window.__shutterPulse = Math.max(0, 1 - snap);  // peaks exactly when blades are shut
+
+  cx2d.clearRect(0, 0, W, H);
+  if (AP.alpha < .01) { requestAnimationFrame(draw); return; }
+
+  const cx = AP.x * W + (REDUCED ? 0 : -mx * 3);
+  const cy = AP.y * H + (REDUCED ? 0 : -my * 3);
+  const R = AP.r * (1 + (REDUCED ? 0 : Math.sin(breath * 2 * Math.PI / 7) * .008));
+  const open = AP.open * snap;
+  const rh = Math.max(2, open * R * .62);
+  const K = 9, twist = (1 - open) * .35;
+
+  /* particle positions this frame */
+  const px = [], py = [];
+  for (const p of parts) {
+    if (!REDUCED) {
+      p.a += (Math.sin(now / 3000 + p.z * 9) * .5) * dt;
+      p.u += Math.cos(p.a) * p.sp * dt; p.v += Math.sin(p.a) * p.sp * dt;
+      if (p.u > 1.3) p.u = -1.3; if (p.u < -1.3) p.u = 1.3;
+      if (p.v > 1.3) p.v = -1.3; if (p.v < -1.3) p.v = 1.3;
+    }
+    px.push(cx + p.u * R + mx * 10 * p.z);
+    py.push(cy + p.v * R + my * 10 * p.z);
+  }
+  function paintField(alphaMul) {
+    for (let i = 0; i < parts.length; i++) {
+      const p = parts[i];
+      const base = p.teal ? 'rgba(10,132,255,' : p.violet ? 'rgba(175,82,222,' : 'rgba(29,29,31,';
+      const a = (p.teal ? .4 : p.violet ? .35 : .1 + p.z * .25) * alphaMul;
+      cx2d.fillStyle = base + a + ')';
+      cx2d.beginPath();
+      cx2d.arc(px[i], py[i], (0.6 + p.z * 1.6), 0, 7);
+      cx2d.fill();
+    }
+  }
+
+  cx2d.globalAlpha = AP.alpha;
+
+  /* faint bleed everywhere */
+  paintField(.25 * AP.field);
+
+  /* disk field */
+  cx2d.save();
+  cx2d.beginPath(); cx2d.arc(cx, cy, R, 0, 7); cx2d.clip();
+  paintField(.55 * AP.field);
+  cx2d.restore();
+
+  /* bright pass inside the hole polygon */
+  cx2d.save();
+  cx2d.beginPath();
+  const rv = rh / Math.cos(Math.PI / K);
+  for (let k = 0; k <= K; k++) {
+    const a = twist + (k + .5) * 2 * Math.PI / K;
+    const vx = cx + Math.cos(a) * rv, vy = cy + Math.sin(a) * rv;
+    k ? cx2d.lineTo(vx, vy) : cx2d.moveTo(vx, vy);
+  }
+  cx2d.clip();
+  paintField(1 * AP.field);
+  /* center glow */
+  const g = cx2d.createRadialGradient(cx, cy, 0, cx, cy, rh);
+  g.addColorStop(0, 'rgba(10,132,255,' + (.12 * AP.field) + ')');
+  g.addColorStop(1, 'rgba(10,132,255,0)');
+  cx2d.fillStyle = g; cx2d.fillRect(cx - rh, cy - rh, rh * 2, rh * 2);
+  cx2d.restore();
+
+  /* blades: 9 circular segments.
+     TWO PASSES, fills first and edges after — interleaving fill/stroke per
+     blade let each later fill paint OVER the earlier blades' edge lines
+     (segments overlap heavily when nearly closed), which erased the edges of
+     blades 0-2 and made the k=0 region read as one giant blade (the
+     "right-hand blade is huge" bug, fixed 2026-07-15). Edges are drawn from
+     each blade's tangent point to its leading rim end, so all nine are
+     congruent by construction — a uniform pinwheel at any opening. */
+  if (rh < R - 1) {
+    const phi = Math.acos(Math.min(1, rh / R));
+    cx2d.fillStyle = '#e6eaf1';
+    for (let k = 0; k < K; k++) {
+      const a = twist + k * 2 * Math.PI / K;
+      cx2d.beginPath();
+      cx2d.arc(cx, cy, R, a - phi, a + phi);
+      cx2d.closePath();
+      cx2d.fill();
+    }
+    cx2d.strokeStyle = 'rgba(30,40,60,.30)';
+    cx2d.lineWidth = 1;
+    for (let k = 0; k < K; k++) {
+      const a = twist + k * 2 * Math.PI / K;
+      const tx = cx + Math.cos(a) * rh,        ty = cy + Math.sin(a) * rh;
+      const ex = cx + Math.cos(a + phi) * R,   ey = cy + Math.sin(a + phi) * R;
+      cx2d.beginPath(); cx2d.moveTo(tx, ty); cx2d.lineTo(ex, ey); cx2d.stroke();
+    }
+  }
+
+  /* ring */
+  cx2d.strokeStyle = 'rgba(30,40,60,.30)';
+  cx2d.lineWidth = 1;
+  cx2d.beginPath();
+  cx2d.arc(cx, cy, R, -Math.PI / 2, -Math.PI / 2 + ringProg * 2 * Math.PI);
+  cx2d.stroke();
+
+  /* lock-on */
+  if (!REDUCED && AP.field > .4 && open > .3) {
+    lockTimer -= dt * 1000;
+    if (lockTimer <= 0 && !lock.active) { fireLock(); lockTimer = 4500 + Math.random() * 2500; }
+  }
+  if (lock.active) {
+    lock.t += dt;
+    const T = lock.t;
+    let prog = Math.min(1, T / .6);
+    prog = 1 - Math.pow(1 - prog, 3);
+    const fade = T > 2.0 ? Math.max(0, 1 - (T - 2.0) / 1.2) : 1;
+    if (T > 3.2) lock.active = false;
+    const spread = (1 - prog) * 40;
+    const hw = lock.w / 2 + spread;
+    const bl = 9;
+    cx2d.strokeStyle = 'rgba(10,132,255,' + (.95 * fade * AP.alpha) + ')';
+    cx2d.lineWidth = 1.5;
+    const corners = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
+    for (const [sx, sy] of corners) {
+      const bx = lock.x + sx * hw, by = lock.y + sy * hw;
+      cx2d.beginPath();
+      cx2d.moveTo(bx - sx * bl, by); cx2d.lineTo(bx, by); cx2d.lineTo(bx, by - sy * bl);
+      cx2d.stroke();
+    }
+    if (prog >= 1 && fade > 0) {
+      const chars = Math.floor(Math.min(1, (T - .6) / .25) * (lock.label.length + 8));
+      const txt = (lock.label + ' · ' + lock.conf).slice(0, chars);
+      cx2d.font = '11px ui-monospace, SF Mono, Cascadia Code, Consolas, monospace';
+      cx2d.fillStyle = 'rgba(10,132,255,' + (.95 * fade * AP.alpha) + ')';
+      cx2d.fillText(txt, lock.x + hw + 10, lock.y - hw + 4);
+      cx2d.strokeStyle = 'rgba(10,132,255,' + (.45 * fade * AP.alpha) + ')';
+      cx2d.beginPath(); cx2d.moveTo(lock.x + hw, lock.y - hw);
+      cx2d.lineTo(lock.x + hw + 7, lock.y - hw + 1); cx2d.stroke();
+    }
+  }
+
+  cx2d.globalAlpha = 1;
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+
+/* film grain (runtime-generated, CSP-safe) */
+(function grain() {
+  const g = document.getElementById('grain'), gx = g.getContext('2d');
+  const t = document.createElement('canvas'); t.width = t.height = 128;
+  const tx = t.getContext('2d'), img = tx.createImageData(128, 128);
+  for (let i = 0; i < img.data.length; i += 4) {
+    const v = Math.random() * 255;
+    img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255;
+  }
+  tx.putImageData(img, 0, 0);
+  function paint() {
+    g.width = innerWidth; g.height = innerHeight;
+    gx.fillStyle = gx.createPattern(t, 'repeat');
+    gx.fillRect(0, 0, g.width, g.height);
+  }
+  paint(); addEventListener('resize', paint);
+})();
+
+/* ==================================================================
+   ATMOSPHERE — WebGL2 caustic light-field + curl-noise flow behind
+   the Canvas2D aperture. Reads the existing aperture state (AP.open,
+   AP.x/y/alpha) and the lock-on pulse so it breathes in lockstep.
+   Hard fallback: if WebGL2 is unavailable / blocklisted / reduced-
+   motion, it stays blank and the Canvas2D hero carries the screen —
+   the hero NEVER goes blank.
+   ================================================================== */
+(function atmosphere() {
+  const cv = document.getElementById('atmosphere');
+  if (REDUCED) { return; }                    // reduced-motion: no shader (spec C.6)
+  let gl;
+  try { gl = cv.getContext('webgl2', { antialias: false, alpha: true }); } catch (e) {}
+  if (!gl) { return; }                        // no WebGL2: Canvas2D hero stands alone
+
+  const VERT = `#version 300 es
+  const vec2 P[3] = vec2[3](vec2(-1.,-1.), vec2(3.,-1.), vec2(-1.,3.));
+  void main(){ gl_Position = vec4(P[gl_VertexID], 0., 1.); }`;
+
+  // Ashima-style 2D simplex noise (public domain) + caustic + curl, one draw call.
+  const FRAG = `#version 300 es
+  precision highp float;
+  uniform vec2 uRes; uniform float uTime; uniform float uAperture;
+  uniform float uLockPulse; uniform vec2 uMouse; uniform vec2 uCenter;
+  uniform float uRingR;
+  out vec4 o;
+  vec3 permute(vec3 x){ return mod(((x*34.0)+1.0)*x, 289.0); }
+  float snoise(vec2 v){
+    const vec4 C=vec4(0.211324865,0.366025404,-0.577350269,0.024390243);
+    vec2 i=floor(v+dot(v,C.yy)); vec2 x0=v-i+dot(i,C.xx);
+    vec2 i1=(x0.x>x0.y)?vec2(1.,0.):vec2(0.,1.);
+    vec4 x12=x0.xyxy+C.xxzz; x12.xy-=i1;
+    i=mod(i,289.0);
+    vec3 p=permute(permute(i.y+vec3(0.,i1.y,1.))+i.x+vec3(0.,i1.x,1.));
+    vec3 m=max(0.5-vec3(dot(x0,x0),dot(x12.xy,x12.xy),dot(x12.zw,x12.zw)),0.0);
+    m=m*m; m=m*m;
+    vec3 x=2.0*fract(p*C.www)-1.0; vec3 h=abs(x)-0.5; vec3 ox=floor(x+0.5); vec3 a0=x-ox;
+    m*=1.79284291-0.85373472*(a0*a0+h*h);
+    vec3 g; g.x=a0.x*x0.x+h.x*x0.y; g.yz=a0.yz*x12.xz+h.yz*x12.yw;
+    return 130.0*dot(m,g);
+  }
+  float n2(vec2 p){ return 0.5+0.5*snoise(p); }
+  vec2 curl(vec2 p){ float e=0.01;
+    float dx=n2(p+vec2(e,0.))-n2(p-vec2(e,0.));
+    float dy=n2(p+vec2(0.,e))-n2(p-vec2(0.,e));
+    return vec2(dy,-dx)/(2.*e); }
+  float caustic(vec2 uv,float t){ float s=0.;
+    s+=pow(n2(uv*3.0+vec2(t*0.08,-t*0.05)),6.0);
+    s+=pow(n2(uv*6.0-vec2(t*0.05,t*0.09)),8.0)*0.6;
+    s+=pow(n2(uv*1.5+t*0.03),4.0)*0.4;
+    return s; }
+  void main(){
+    vec2 uv=(gl_FragCoord.xy - uCenter*uRes)/uRes.y;  // origin AT the aperture centre
+    uv+=uMouse*0.03;
+    float r=length(uv);
+    float c=caustic(uv,uTime)*mix(0.12,1.0,smoothstep(1.0,0.0,r))*uAperture;
+    vec2 flow=curl(uv*2.0+uTime*0.05);
+    float streak=smoothstep(0.6,1.0,abs(sin(dot(flow,uv)*8.0+uTime)))*smoothstep(1.2,0.2,r);
+    float ring=smoothstep(0.02,0.0,abs(r-uRingR))*uLockPulse;
+    vec3 col=vec3(0.04,0.42,0.95);
+    col=mix(col, vec3(0.55,0.30,0.85), streak*0.5);
+    col=mix(col, vec3(0.02,0.30,0.85), ring);
+    float a=clamp(c*0.55+streak*0.18+ring*0.85, 0.0, 0.75)*uAperture;
+    o=vec4(col, a);
+  }`;
+
+  function sh(type, src) {
+    const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { console.warn(gl.getShaderInfoLog(s)); return null; }
+    return s;
+  }
+  const vs = sh(gl.VERTEX_SHADER, VERT), fs = sh(gl.FRAGMENT_SHADER, FRAG);
+  if (!vs || !fs) { return; }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { console.warn(gl.getProgramInfoLog(prog)); return; }
+  gl.useProgram(prog);
+  const U = n => gl.getUniformLocation(prog, n);
+  const uRes = U('uRes'), uTime = U('uTime'), uAperture = U('uAperture'),
+        uLockPulse = U('uLockPulse'), uMouse = U('uMouse'), uCenter = U('uCenter'),
+        uRingR = U('uRingR');
+  const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
+  gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); // soft tint on white
+
+  const DPR = Math.min(devicePixelRatio || 1, 1.5);
+  function resize() {
+    cv.width = Math.floor(innerWidth * DPR); cv.height = Math.floor(innerHeight * DPR);
+    cv.style.width = innerWidth + 'px'; cv.style.height = innerHeight + 'px';
+    gl.viewport(0, 0, cv.width, cv.height);
+  }
+  resize(); addEventListener('resize', resize);
+
+  const t0 = performance.now();
+  function frame() {
+    // AP + lock come from the Canvas2D engine above (shared globals)
+    gl.uniform2f(uRes, cv.width, cv.height);
+    gl.uniform1f(uTime, (performance.now() - t0) / 1000);
+    // Multiply by the SAME snap factor the blades use (window.__shutterSnap), so
+    // the light field goes dark at the exact instant the shutter closes. Reading
+    // raw AP.open here was the desync: mechanics snapped, light did not.
+    const snap = window.__shutterSnap ?? 1;
+    gl.uniform1f(uAperture, Math.max(0, AP.alpha) * (0.35 + 0.65 * AP.open * snap));
+    const lockWhisper = (typeof lock !== 'undefined' && lock.active)
+      ? 0.25 * Math.max(0, 1 - lock.t / 1.4) : 0;
+    gl.uniform1f(uLockPulse, Math.max(window.__shutterPulse || 0, lockWhisper));
+    gl.uniform2f(uMouse, (typeof mx !== 'undefined' ? mx : 0), (typeof my !== 'undefined' ? my : 0));
+    gl.uniform2f(uCenter, AP.x, 1 - AP.y);
+    gl.uniform1f(uRingR, AP.r / innerHeight);   // ring radius tracks the blades' radius
+    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+    if (AP.alpha > 0.01) gl.drawArrays(gl.TRIANGLES, 0, 3);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+
+/* ===================== ROUTER ===================== */
+function go(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const scr = document.getElementById('s-' + name);
+  scr.querySelectorAll('.rv').forEach(el => { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; });
+  scr.classList.add('active');
+  // Resume memory: remember how far the user got + their config, so an
+  // interrupted session can pick up exactly here on the next launch.
+  // 'theater' is stored as 'review' (never resume INTO a live deploy screen).
+  // go('done') must NOT overwrite argus.cfg: on the resume-to-summary path the
+  // form still holds pristine defaults and would clobber the real config.
+  try {
+    if (name !== 'welcome' && name !== 'done')
+      localStorage.setItem('argus.screen', name === 'theater' ? 'review' : name);
+    if (name === 'done') localStorage.removeItem('argus.screen');
+    else localStorage.setItem('argus.cfg', JSON.stringify(cfgFromForm()));
+  } catch (e) {}
+  // Any manual navigation invalidates a pending resume offer — a stale
+  // "Resume deployment" button floating over a half-edited form is a footgun.
+  const rb = document.getElementById('resume-bar');
+  if (rb) rb.remove();
+  if (name === 'done') { try { loadUsers(); } catch (e) {} }
+  const p = PRESETS[name];
+  AP.tx = p.x; AP.ty = p.y; AP.tr = p.r(); AP.topen = p.open;
+  AP.talpha = p.alpha; AP.tfield = p.field;
+  if (name === 'theater') { REAL ? startRealDeploy() : runTheater(); }
+  if (name === 'config') { lockTimer = 600; }
+  if (name === 'train') { trInit(); }
+  // one-stop: AWS's own page opens alongside, inside the app, on these screens
+  if (REAL && name === 'account') openAws('signup');
+  if (REAL && name === 'keys') openAws('iam-keys');
+  if (REAL && name !== 'account' && name !== 'keys' && window.pywebview)
+    { try { pywebview.api.close_aws_pane(); } catch (e) {} }
+  scr.scrollTop = 0;
+}
+
+/* status line cycle */
+(function () {
+  const lines = ['ENGINE · REKOGNITION CUSTOM LABELS', 'STORE · S3 + DYNAMODB',
+                 'ALERTS · SES', 'DELIVERY · CLOUDFRONT'];
+  let i = 0;
+  setInterval(() => {
+    const el = document.getElementById('statusline');
+    if (el) { i = (i + 1) % lines.length; el.textContent = lines[i]; }
+  }, 6000);
+})();
+
+/* consent: standard checkbox agreement */
+function agreeChanged() {
+  document.getElementById('accept-btn').disabled =
+    !document.getElementById('agree-check').checked;
+}
+function toggleLegal(which) {
+  const d = document.getElementById('fold-' + which);
+  if (d) d.open = !d.open;
+  if (REAL && d && d.open && window.pywebview) {
+    pywebview.api.legal_text(which).then(r => {
+      if (r && r.ok && r.text && !d.querySelector('.fulltext')) {
+        const pre = document.createElement('div');
+        pre.className = 'fulltext';
+        pre.textContent = r.text;
+        const note = d.querySelector('.more');
+        if (note) note.replaceWith(pre); else d.appendChild(pre);
+      }
+    }).catch(() => {});
+  }
+}
+function declineAndQuit() {
+  if (REAL && window.pywebview) { pywebview.api.quit(); return; }
+  document.body.innerHTML = '<div style="height:100vh;display:grid;place-items:center;' +
+    'color:#6e6e73;font-size:15px;background:#eef1f5">' +
+    'Agreement declined &#8212; ARGUS closed. (Preview: you may close this tab.)</div>';
+}
+function openAwsClicked() {
+  openAws('signup');
+  const hint = document.getElementById('aws-hint');
+  if (!REAL && hint) hint.textContent =
+    'Preview mode: in the installed app, the real AWS window opens here.';
+}
+
+/* account rail advance */
+let acctStep = 0;
+function acctAdvance() {
+  const items = document.querySelectorAll('#acct-rail li');
+  // If the rail is already fully done (signed-in detection), one click moves on.
+  if (document.querySelectorAll('#acct-rail li.done').length >= items.length ||
+      acctStep >= items.length - 1) {
+    go('keys');
+    return;
+  }
+  const vp = document.getElementById('acct-viewport');
+  vp.classList.add('locked');
+  setTimeout(() => vp.classList.remove('locked'), 700);
+  items[acctStep].classList.remove('on'); items[acctStep].classList.add('done');
+  items[acctStep].querySelector('.dot').textContent = '';
+  acctStep++;
+  items[acctStep].classList.add('on');
+}
+
+/* keys validation */
+function checkKeys() {
+  const ak = document.getElementById('ak').value.trim();
+  const sk = document.getElementById('sk').value.trim();
+  const okA = /^AKIA[0-9A-Z]{16}$/.test(ak);
+  const okS = sk.length >= 30;
+  document.getElementById('fw-ak').classList.toggle('locked', okA);
+  document.getElementById('fw-sk').classList.toggle('locked', okS);
+  const both = okA && okS;
+  document.getElementById('keys-ok').classList.toggle('show', both);
+  document.getElementById('keys-next').disabled = !both;
+}
+
+function tgl(el) {
+  el.setAttribute('aria-checked', el.getAttribute('aria-checked') === 'true' ? 'false' : 'true');
+}
+
+/* hold-to-deploy (800ms, release cancels) */
+(function () {
+  const btn = document.getElementById('deploy-btn');
+  const fill = document.getElementById('hold-fill');
+  let t0 = null, raf = null;
+  function step() {
+    const p = Math.min(1, (performance.now() - t0) / 800);
+    fill.style.clipPath = `inset(0 ${(1 - p) * 100}% 0 0 round 980px)`;
+    if (p >= 1) { cancel(); go('theater'); return; }
+    raf = requestAnimationFrame(step);
+  }
+  function start(e) { e.preventDefault(); t0 = performance.now(); raf = requestAnimationFrame(step); }
+  function cancel() { if (raf) cancelAnimationFrame(raf); raf = null; fill.style.clipPath = 'inset(0 100% 0 0 round 980px)'; }
+  btn.addEventListener('pointerdown', start);
+  btn.addEventListener('pointerup', cancel);
+  btn.addEventListener('pointerleave', cancel);
+  btn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { go('theater'); } });
+})();
+
+/* theater */
+const STAGES = [
+  ['f/16',  'CREATE  iam · 6 roles, least-privilege',       1500],
+  ['f/11',  'CREATE  dynamodb · 4 tables + index',          1300],
+  ['f/8',   'CREATE  s3 · frames · processing · dashboard', 1400],
+  ['f/5.6', 'BUILD   pillow 12.2 · detection runtime',      1700],
+  ['f/4',   'CREATE  lambda · 5 functions',                 1800],
+  ['f/2.8', 'CREATE  cognito · private sign-in',            1100],
+  ['f/2',   'CREATE  api · 21 routes, JWT',                 1500],
+  ['f/1.7', 'PUBLISH dashboard · https, cdn',               1500],
+  ['f/1.4', 'CREATE  rekognition · project ready',          1000],
+];
+/* Deployment progress -> aperture opening, with perceptual easing. A linear
+   map spends the first half of the deploy visually near-closed (the "opening
+   is too subtle" complaint): pow(p, .55) front-loads the motion so the first
+   stages visibly swing the blades, and .12 keeps a real f/16 look at start. */
+function apertureProgress(p) {
+  return .12 + .88 * Math.pow(Math.max(0, Math.min(1, p)), .55);
+}
+
+let theaterTimers = [];
+function runTheater() {
+  theaterTimers.forEach(clearTimeout); theaterTimers = [];
+  const feed = document.getElementById('feed');
+  const fstop = document.getElementById('fstop');
+  const tplus = document.getElementById('tplus');
+  const nextBtn = document.getElementById('theater-next');
+  feed.innerHTML = ''; nextBtn.classList.remove('show');
+  fstop.textContent = 'f/16';
+  AP.topen = apertureProgress(0);
+  const t0 = performance.now();
+  const clock = setInterval(() => {
+    const s = (performance.now() - t0) / 1000;
+    tplus.textContent = 'T+' + String(Math.floor(s / 60)).padStart(2, '0') + ':' +
+      (s % 60).toFixed(1).padStart(4, '0');
+  }, 100);
+  theaterTimers.push(clock);
+  let acc = 700;
+  STAGES.forEach(([f, line, dur], i) => {
+    acc += dur;
+    theaterTimers.push(setTimeout(() => {
+      fstop.textContent = f;
+      AP.topen = apertureProgress((i + 1) / STAGES.length);
+      triggerShutter(false);   // each finished stage = the camera "captures" it
+      const s = (performance.now() - t0) / 1000;
+      const ts = 'T+' + String(Math.floor(s / 60)).padStart(2, '0') + ':' +
+        (s % 60).toFixed(1).padStart(4, '0');
+      const div = document.createElement('div');
+      div.innerHTML = '<span class="ts">' + ts + '</span>' + line + '  <span class="ok">OK</span>';
+      feed.appendChild(div);
+      requestAnimationFrame(() => div.classList.add('show'));
+      fireLock(line.split('·')[0].replace('CREATE', '').replace('BUILD', '').replace('PUBLISH', '').trim().toUpperCase());
+      if (i === STAGES.length - 1) {
+        clearInterval(clock);
+        theaterTimers.push(setTimeout(() => nextBtn.classList.add('show'), 700));
+      }
+    }, acc));
+  });
+}
+
+/* done: copy with bracket feedback */
+function copyUrl(btn) {
+  const fw = document.getElementById('fw-url');
+  const v = document.getElementById('dash-url').value;
+  try { navigator.clipboard.writeText(v); } catch (e) {}
+  if (REAL && window.pywebview) pywebview.api.open_external(v);
+  fw.classList.add('locked');
+  btn.textContent = 'Copied';
+  setTimeout(() => { fw.classList.remove('locked'); btn.textContent = 'Copy'; }, 1600);
+}
+setTarget('orchid-beetle');
+
+/* ==================================================================
+   BRIDGE — real desktop app (pywebview) vs standalone preview.
+   When window.pywebview.api exists, the wizard drives the real
+   deploy.py backend; otherwise every action is simulated so the
+   same file doubles as a clickable preview.
+   ================================================================== */
+/* pywebview injects window.pywebview.api ASYNCHRONOUSLY after page load, so a
+   load-time const would read false even in the real app (a race). REAL is now a
+   live binding upgraded by the 'pywebviewready' event. */
+let REAL = !!(window.pywebview && window.pywebview.api);
+window.addEventListener('pywebviewready', () => {
+  REAL = !!(window.pywebview && window.pywebview.api);
+  initResume();
+});
+
+/* ==================================================================
+   RESUME — an interrupted session must never cost the user progress.
+   Three cases on launch, checked in priority order:
+     complete  -> jump offer to the summary (URL restored from state)
+     partial   -> offer to resume the deployment (stages are idempotent:
+                  finished pieces are adopted, missing ones created)
+     screen    -> offer to continue at the step they left (config fields
+                  restored; stored IAM key marks the keys step done)
+   The offer is a bar, not an auto-jump: the user stays in control.
+   ================================================================== */
+function restoreCfg() {
+  try {
+    const c = JSON.parse(localStorage.getItem('argus.cfg') || '{}');
+    const set = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
+    set('pname', c.deployment_name); set('target', c.target_label);
+    set('email', c.sender_email); set('recipient_email', c.recipient_email);
+    // region select stores option TEXT ("Singapore (ap-southeast-1)") while the
+    // cfg stores the code — re-select by matching the code in parentheses
+    const sel = document.getElementById('region');
+    if (sel && c.region) {
+      for (const o of sel.options) {
+        if (o.text.includes('(' + c.region + ')')) { sel.value = o.text; break; }
+      }
+    }
+  } catch (e) {}
+}
+
+function showResumeBar(text, btnLabel, action) {
+  const old = document.getElementById('resume-bar');
+  if (old) old.remove();                      // never stack two offers
+  const bar = document.createElement('div');
+  bar.id = 'resume-bar';
+  bar.style.cssText = 'position:fixed;top:64px;left:50%;transform:translateX(-50%);'
+    + 'display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.92);'
+    + 'backdrop-filter:blur(10px);border:1px solid rgba(30,40,60,.14);border-radius:12px;'
+    + 'padding:12px 18px;z-index:800;box-shadow:0 10px 40px rgba(20,30,50,.12);font-size:13.5px';
+  const span = document.createElement('span');
+  span.textContent = text;
+  const okBtn = document.createElement('button');
+  okBtn.className = 'btn'; okBtn.style.padding = '8px 16px'; okBtn.textContent = btnLabel;
+  okBtn.onclick = () => { bar.remove(); action(); };
+  const dis = document.createElement('a');
+  dis.href = '#'; dis.textContent = 'Start over';
+  dis.style.cssText = 'color:var(--muted);font-size:12.5px';
+  dis.onclick = (e) => { e.preventDefault();
+    try { localStorage.removeItem('argus.screen'); localStorage.removeItem('argus.cfg'); } catch (x) {}
+    bar.remove(); };
+  bar.append(span, okBtn, dis);
+  document.body.appendChild(bar);
+}
+
+async function initResume() {
+  if (!REAL) return;
+  try {
+    // Liveness probe first: if the stored key no longer AUTHENTICATES (account
+    // closed or key revoked), every resume offer below would be lies about a
+    // world that no longer exists. Network errors are deliberately NOT treated
+    // as a dead account.
+    try {
+      const alive = await pywebview.api.account_alive();
+      if (alive && !alive.ok && alive.reason === 'auth') {
+        showResumeBar('Your stored AWS key no longer works — the account may be closed or the key revoked.',
+          'Start fresh', async () => {
+            try { await pywebview.api.forget_credentials(); } catch (e) {}
+            try { localStorage.removeItem('argus.screen'); localStorage.removeItem('argus.cfg'); } catch (e) {}
+            go('welcome');
+          });
+        return;
+      }
+    } catch (e) {}
+    const st = await pywebview.api.deployment_status();
+    if (st && st.status === 'complete') {
+      restoreCfg();   // keep the form aligned with the deployment that exists
+      if (st.dashboard) { const u = document.getElementById('dash-url'); if (u) u.value = st.dashboard; }
+      // A training run may still be in flight from the last session — that
+      // offer outranks the plain summary (go('train') re-attaches the watcher).
+      try {
+        const ts = await pywebview.api.training_status();
+        if (ts && ts.ok && (ts.status === 'in_progress' || ts.status === 'needs_wire'
+                            || ts.status === 'unknown')) {
+          showResumeBar('A model training run from your last session is still in progress.',
+                        'Watch it', () => go('train'));
+          return;
+        }
+      } catch (e) {}
+      showResumeBar('This account already has a completed Argus deployment.',
+                    'Open the summary', () => go('done'));
+      return;
+    }
+    if (st && st.status === 'partial') {
+      restoreCfg();
+      showResumeBar('Your last deployment was interrupted after “' + (st.last_stage || 'start')
+                    + '”. Finished pieces are kept — resuming only builds what is missing.',
+                    'Resume deployment', () => go('theater'));
+      return;
+    }
+    const saved = localStorage.getItem('argus.screen');
+    if (saved && saved !== 'welcome' && document.getElementById('s-' + saved)) {
+      restoreCfg();
+      showResumeBar('Pick up where you left off?', 'Continue', async () => {
+        if (saved === 'keys') {
+          try { const c = await pywebview.api.has_credentials();
+                if (c && c.ok) { go('config'); return; } } catch (e) {}
+        }
+        go(saved);
+      });
+    }
+  } catch (e) {}
+}
+
+/* ==================================================================
+   SYSTEM CHECK — live, read-only audit of the deployed stack. Every
+   resource Argus created is described against AWS right now; the
+   result is per-resource proof, not a claim.
+   ================================================================== */
+async function runSystemCheck() {
+  const box = document.getElementById('syscheck');
+  if (!box) return;
+  box.style.display = 'block';
+  if (!REAL) {
+    box.innerHTML = '<span style="color:var(--muted)">Preview mode — in the installed app this '
+      + 'checks every deployed resource against AWS and lists each one as LIVE or MISSING.</span>';
+    return;
+  }
+  box.innerHTML = '<span style="color:var(--muted)">Checking every resource…</span>';
+  let cfg = {};
+  try { cfg = JSON.parse(localStorage.getItem('argus.cfg') || '{}'); } catch (e) {}
+  try {
+    const r = await pywebview.api.verify_deployment(cfg);
+    if (!r || !r.ok) {
+      box.innerHTML = '<span style="color:var(--caution)">Check failed: '
+        + ((r && r.error) || 'unknown error') + '</span>';
+      return;
+    }
+    const rows = r.checks.map(c =>
+      '<div>' + (c.ok ? '<span style="color:var(--ok)">● LIVE</span>'
+                      : '<span style="color:var(--caution)">○ MISSING</span>')
+      + '  ' + c.name + (c.detail ? '  <span style="color:var(--muted)">' + c.detail + '</span>' : '')
+      + '</div>').join('');
+    box.innerHTML = '<div style="margin-bottom:8px"><b>' + r.present + ' / ' + r.total
+      + ' resources live</b>' + (r.present === r.total
+        ? ' — deployment is complete.' : ' — some pieces are missing; Resume deployment rebuilds them.')
+      + '</div>' + rows;
+  } catch (e) {
+    box.innerHTML = '<span style="color:var(--caution)">Check failed: ' + e + '</span>';
+  }
+}
+
+/* ==================================================================
+   DASHBOARD ACCOUNTS — the pool starts empty; first sign-in account
+   is created here. CRUD straight against Cognito via the bridge.
+   ================================================================== */
+async function loadUsers() {
+  const box = document.getElementById('user-list');
+  if (!box) return;
+  if (!REAL) { box.textContent = 'Preview mode — account management works in the installed app.'; return; }
+  try {
+    const r = await pywebview.api.list_dashboard_users();
+    if (!r || !r.ok) { box.textContent = (r && r.error) || 'Could not list accounts.'; return; }
+    if (!r.users.length) {
+      box.innerHTML = '<span style="color:var(--caution)">No accounts yet — nobody can sign in until you add one below.</span>';
+      return;
+    }
+    box.innerHTML = r.users.map(u =>
+      '<div>&#9679; ' + u.email + '  <span style="color:var(--muted)">' + u.status + '</span>'
+      + '  <a href="#" style="color:#b3261e;font-size:11.5px" onclick="delUser(\'' + u.email.replace(/'/g, "\\'") + '\');return false">remove</a></div>'
+    ).join('');
+  } catch (e) { box.textContent = 'Could not list accounts: ' + e; }
+}
+
+async function addUser() {
+  const email = (document.getElementById('nu-email') || {}).value?.trim() || '';
+  const pass = (document.getElementById('nu-pass') || {}).value || '';
+  const msg = document.getElementById('user-msg');
+  if (!/.+@.+\..+/.test(email)) { msg.textContent = 'Enter a valid email.'; return; }
+  if (pass.length < 8 || !/[a-z]/.test(pass) || !/[0-9]/.test(pass)) {
+    msg.textContent = 'Password needs 8+ characters with a lowercase letter and a digit.'; return;
+  }
+  if (!REAL) { showNote('Preview mode — works in the installed app.'); return; }
+  msg.textContent = 'Creating…';
+  const r = await pywebview.api.create_dashboard_user(email, pass);
+  if (r && r.ok) {
+    msg.textContent = '✓ Account created — it can sign in to the dashboard right now.';
+    document.getElementById('nu-email').value = ''; document.getElementById('nu-pass').value = '';
+    loadUsers();
+  } else msg.textContent = (r && r.error) || 'Create failed.';
+}
+
+async function delUser(email) {
+  if (!REAL) return;
+  if (!confirm('Remove dashboard account ' + email + '?')) return;
+  const r = await pywebview.api.delete_dashboard_user(email);
+  if (!(r && r.ok)) showNote((r && r.error) || 'Remove failed.');
+  loadUsers();
+}
+
+/* ==================================================================
+   TEARDOWN — typed confirmation, then the destroy engine streams
+   per-resource DELETE lines into the log.
+   ================================================================== */
+async function destroyDeployment() {
+  const conf = (document.getElementById('dz-confirm') || {}).value || '';
+  const logBox = document.getElementById('destroy-log');
+  if (!REAL) { showNote('Preview mode — teardown works in the installed app.'); return; }
+  if (!confirm('This deletes EVERY resource of this deployment, including all data. Continue?')) return;
+  logBox.style.display = 'block';
+  logBox.innerHTML = '<span style="color:var(--muted)">Starting teardown…</span>';
+  const r = await pywebview.api.destroy_deployment(conf.trim());
+  if (!(r && r.ok)) {
+    logBox.innerHTML = '<span style="color:var(--caution)">' + ((r && r.error) || 'Refused.') + '</span>';
+  }
+}
+
+function cfgFromForm() {
+  const val = id => (document.getElementById(id) || {}).value || '';
+  const toggleOn = i => { const t = document.querySelectorAll('.tgl')[i];
+    return t ? t.getAttribute('aria-checked') === 'true' : false; };
+  const region = (val('region') || 'us-east-1').match(/\(([^)]+)\)/);
+  return {
+    deployment_name: val('pname') || document.querySelector('#s-config .ufield')?.value || 'My deployment',
+    target_label: (val('target') || 'target').trim(),
+    region: region ? region[1] : 'us-east-1',
+    prefix: (val('pname') || 'argus').toLowerCase().replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-+|-+$/g, '').slice(0, 21) || 'argus',
+    sender_email: (val('email') || '').trim(),
+    recipient_email: val('recipient_email') || '',
+    live_view: toggleOn(0),
+  };
+}
+
+/* --- real AWS embedded pane (account + keys screens) --- */
+async function openAws(which) {
+  if (REAL) { try { await pywebview.api.open_aws_pane(which || 'signup'); } catch (e) {} }
+  else showNote('Preview mode — in the installed app this opens AWS’s own page in a secure window.');
+}
+
+/* Small transient notice bar — honest feedback instead of silently dead
+   buttons when an action is unavailable (e.g. browser preview). */
+function showNote(msg, ms) {
+  let n = document.getElementById('argus-note');
+  if (!n) {
+    n = document.createElement('div');
+    n.id = 'argus-note';
+    n.style.cssText = 'position:fixed;left:50%;bottom:26px;transform:translateX(-50%);'
+      + 'background:rgba(20,24,34,.92);color:#fff;padding:10px 18px;border-radius:10px;'
+      + 'font-size:13px;z-index:900;box-shadow:0 8px 30px rgba(0,0,0,.25);max-width:70ch;'
+      + 'transition:opacity .3s;pointer-events:none';
+    document.body.appendChild(n);
+  }
+  n.textContent = msg;
+  n.style.opacity = '1';
+  clearTimeout(showNote._t);
+  showNote._t = setTimeout(() => { n.style.opacity = '0'; }, ms || 3200);
+}
+
+/* Exit setup — the topbar link. Real app: quit via the bridge. Preview: explain. */
+function exitSetup() {
+  if (REAL) { try { pywebview.api.quit(); } catch (e) {} }
+  else showNote('Preview mode — in the installed app this closes Argus. Progress is saved automatically.');
+}
+
+/* --- real key verification (replaces the local regex gate on Continue) --- */
+async function keysContinue() {
+  if (!REAL) { go('config'); return; }
+  const ak = document.getElementById('ak').value.trim();
+  const sk = document.getElementById('sk').value.trim();
+  const okline = document.getElementById('keys-ok');
+  const btn = document.getElementById('keys-next');
+  btn.disabled = true; okline.classList.remove('show');
+  okline.querySelector('span') || null;
+  try {
+    const r = await pywebview.api.verify_credentials(ak, sk);
+    if (r && r.ok && r.admin === false) {
+      // The key authenticates but cannot deploy anything — stop HERE with the
+      // exact fix, instead of 15 AccessDenied errors mid-deployment.
+      okline.innerHTML = '&#9888; The key works, but user has no deploy rights. In the AWS window: '
+        + 'IAM &#8594; Users &#8594; <span class="mono">deployer</span> &#8594; Add permissions &#8594; '
+        + 'Attach policies directly &#8594; <span class="mono">AdministratorAccess</span> — then Continue again.';
+      okline.style.color = 'var(--caution)';
+      okline.classList.add('show');
+      btn.disabled = false;
+      openAws('iam-keys');
+      return;
+    }
+    if (r && r.ok) {
+      okline.style.color = '';
+      okline.innerHTML = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.2 4.8 9 10 3.4"/></svg> Verified &#183; account ' + r.account + ' &#183; encrypted locally'
+        + (r.admin === true ? ' &#183; deploy rights confirmed' : ' &#183; permissions unconfirmed');
+      okline.classList.add('show');
+      document.getElementById('fw-ak').classList.add('locked');
+      document.getElementById('fw-sk').classList.add('locked');
+      setTimeout(() => go('config'), 650);
+    } else {
+      okline.innerHTML = (r && r.error) ? r.error : 'Verification failed.';
+      okline.style.color = 'var(--caution)';
+      okline.classList.add('show');
+      btn.disabled = false;
+    }
+  } catch (e) {
+    okline.textContent = 'Could not reach the verifier.'; okline.classList.add('show');
+    btn.disabled = false;
+  }
+}
+
+/* --- real deployment: start_deploy + event-driven theater --- */
+let realStages = [];       // filled from the first 'stage' event's total
+let realStartT = 0;
+async function startRealDeploy() {
+  const feed = document.getElementById('feed');
+  const fstop = document.getElementById('fstop');
+  const nextBtn = document.getElementById('theater-next');
+  feed.innerHTML = ''; nextBtn.classList.remove('show');
+  fstop.textContent = 'f/16'; AP.topen = apertureProgress(0);
+  realStartT = performance.now();
+  const cfg = cfgFromForm();
+  const r = await pywebview.api.start_deploy(cfg);
+  if (!r || !r.ok) {
+    feedLine('T+00:00.0', (r && r.error) ? r.error : 'Could not start deployment', 'err');
+  }
+}
+
+function tplusNow() {
+  const s = (performance.now() - realStartT) / 1000;
+  return 'T+' + String(Math.floor(s / 60)).padStart(2, '0') + ':' +
+    (s % 60).toFixed(1).padStart(4, '0');
+}
+function feedLine(ts, text, cls) {
+  const feed = document.getElementById('feed');
+  if (!feed) return;
+  const div = document.createElement('div');
+  const tag = cls === 'err' ? '<span class="ok" style="color:var(--caution)">FAIL</span>'
+            : cls === 'ok' ? '<span class="ok">OK</span>' : '';
+  div.innerHTML = '<span class="ts">' + ts + '</span>' + text + '  ' + tag;
+  feed.appendChild(div);
+  requestAnimationFrame(() => div.classList.add('show'));
+  feed.scrollTop = feed.scrollHeight;
+}
+
+const FSTOPS = ['f/16','f/13','f/11','f/9','f/8','f/6.7','f/5.6','f/4.5','f/4',
+                'f/3.4','f/2.8','f/2.4','f/2','f/1.8','f/1.4'];
+
+/* config validation gate */
+function validEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v); }
+function validateConfig() {
+  const name = (document.getElementById('pname') || {}).value || '';
+  const target = (document.getElementById('target') || {}).value || '';
+  const email = (document.getElementById('email') || {}).value || '';
+  const err = document.getElementById('email-err');
+  const btn = document.getElementById('config-next');
+  let emailMsg = '';
+  if (email && !validEmail(email)) emailMsg = 'That does not look like a valid email address.';
+  if (err) err.textContent = emailMsg;
+  const ok = name.trim().length >= 2 && target.trim().length >= 2 && validEmail(email);
+  if (btn) btn.disabled = !ok;
+  return ok;
+}
+function configContinue() { if (validateConfig()) go('review'); }
+
+/* Python -> JS event sink (app.py calls ARGUS.onDeployEvent) */
+window.ARGUS = {
+  onDeployEvent(e) {
+    if (!e || !e.kind) return;
+    if (e.kind.indexOf('train') === 0) { trEvent(e); return; }
+    if (e.kind === 'aws_nav') { advanceAwsRail(e.url); return; }
+    if (e.kind === 'stage') {
+      if (e.status === 'running') {
+        AP.topen = apertureProgress(e.index / Math.max(1, e.total));
+        const fi = Math.min(FSTOPS.length - 1, Math.round(e.index / Math.max(1, e.total - 1) * (FSTOPS.length - 1)));
+        document.getElementById('fstop').textContent = FSTOPS[fi];
+        document.getElementById('plabel') && (document.getElementById('plabel').textContent = e.label);
+        feedLine(tplusNow(), 'CREATE  ' + (e.label || e.name).toLowerCase(), null);
+        fireLock((e.label || e.name).toUpperCase());
+      } else if (e.status === 'done') {
+        AP.topen = apertureProgress((e.index + 1) / Math.max(1, e.total));
+        triggerShutter(false);   // each finished stage = the camera "captures" it
+        const last = document.querySelector('#feed div:last-child');
+        if (last && !last.querySelector('.ok')) last.innerHTML += '  <span class="ok">OK</span>';
+      } else if (e.status === 'error') {
+        const last = document.querySelector('#feed div:last-child');
+        if (last) last.innerHTML += '  <span class="ok" style="color:var(--caution)">FAIL</span>';
+      }
+      return;
+    }
+    if (e.kind === 'log') { /* fine-grained lines are optional; stages are the spine */ return; }
+    if (e.kind === 'done') {
+      document.getElementById('fstop').textContent = 'f/1.4';
+      AP.topen = 1;
+      feedLine(tplusNow(), 'deployment complete', 'ok');
+      if (e.dashboard) {
+        const u = document.getElementById('dash-url');
+        if (u) u.value = e.dashboard;
+      }
+      document.getElementById('theater-next').classList.add('show');
+      return;
+    }
+    if (e.kind === 'error') {
+      feedLine(tplusNow(), e.message || 'deployment error', 'err');
+      return;
+    }
+    if (e.kind === 'destroy') {
+      const lb = document.getElementById('destroy-log');
+      if (lb) {
+        lb.style.display = 'block';
+        const d = document.createElement('div');
+        d.textContent = e.line || '';
+        d.style.color = e.ok ? '' : '#b3261e';
+        lb.appendChild(d); lb.scrollTop = lb.scrollHeight;
+      }
+      return;
+    }
+    if (e.kind === 'destroy_done') {
+      const lb = document.getElementById('destroy-log');
+      if (lb) {
+        const d = document.createElement('div');
+        d.style.fontWeight = '600';
+        d.textContent = (e.failed ? '⚠ Teardown finished with ' + e.failed + ' failure(s): '
+          + (e.failures || []).join(', ')
+          : 'Teardown finished — verifying against AWS…');
+        lb.appendChild(d); lb.scrollTop = lb.scrollHeight;
+      }
+      return;   // navigation happens only after independent verification
+    }
+    if (e.kind === 'destroy_verified') {
+      const lb = document.getElementById('destroy-log');
+      if (lb) {
+        const d = document.createElement('div');
+        d.style.fontWeight = '600';
+        if (e.live === 0) {
+          d.textContent = '✓ VERIFIED — 0/' + e.total + ' resources remain. Account is clean.';
+        } else {
+          d.style.color = '#b3261e';
+          d.textContent = '⚠ VERIFIED ' + e.live + '/' + e.total + ' resources STILL EXIST: '
+            + (e.leftovers || []).join(', ') + ' — click Delete deployment again to retry.';
+        }
+        lb.appendChild(d); lb.scrollTop = lb.scrollHeight;
+      }
+      if (e.live === 0) {
+        try { localStorage.removeItem('argus.screen'); localStorage.removeItem('argus.cfg'); } catch (x) {}
+        showNote('Deployment removed and independently verified — returning to start.');
+        setTimeout(() => {
+          const u = document.getElementById('dash-url'); if (u) u.value = '';
+          const ul = document.getElementById('user-list'); if (ul) ul.textContent = '…';
+          go('welcome');
+        }, 2600);
+      }
+      return;
+    }
+  }
+};
+
+/* ==================================================================
+   TRAIN — the in-app training pipeline UI. Deterministic bridges only:
+   pick folder -> analyze -> cost gate (typed TRAIN) -> start -> watch
+   -> the model is wired into the cameras. All backend events arrive
+   as train_* kinds and are routed here by onDeployEvent.
+   ================================================================== */
+const TR = { path: '', report: null, classId: null, plan: null, running: false };
+const trProg = {};
+
+function escapeHtml(s) {
+  const d = document.createElement('div'); d.textContent = String(s); return d.innerHTML;
+}
+
+function trShowPanels(p) {
+  const ids = { data: 'tr-data', gate: 'tr-gate', run: 'tr-run', result: 'tr-result' };
+  for (const k in ids) {
+    const el = document.getElementById(ids[k]);
+    if (el) el.style.display = p[k] ? '' : 'none';
+  }
+}
+
+function trInit() {
+  if (!REAL) {
+    trShowPanels({ data: true });
+    return;
+  }
+  pywebview.api.training_status().then(st => {
+    if (!st || !st.ok) { trShowPanels({ data: true }); return; }
+    const cur = document.getElementById('tr-current');
+    const rbTop = document.getElementById('tr-rollback-top');
+    if (cur) {
+      if (st.active_f1 != null || st.status === 'trained') {
+        cur.style.display = 'block';
+        cur.textContent = 'Current model: F1 '
+          + (st.active_f1 != null ? Number(st.active_f1).toFixed(2) : 'unknown');
+      } else cur.style.display = 'none';
+    }
+    // rollback must stay reachable after a relaunch, not only on the
+    // train_done panel of the session that trained
+    if (rbTop) rbTop.style.display = st.rollback ? '' : 'none';
+    // local pipeline still running in-process (convert/upload/datasets):
+    // show the live run view — events keep streaming into it
+    if (st.status === 'preparing') {
+      trShowPanels({ run: true });
+      trFeedLine('a training run is active — live progress continues below', null);
+      return;
+    }
+    // in_progress / needs_wire: re-attach the cloud watcher. 'unknown' means
+    // one describe call failed (network blip) while a run IS pending — the
+    // watcher's own retry loop is the right tool, so attach anyway.
+    if (st.status === 'in_progress' || st.status === 'needs_wire'
+        || st.status === 'unknown') { trEnterWatch(); return; }
+    if (st.aborted_attempt)
+      showNote('An earlier training attempt was interrupted before reaching '
+               + 'AWS. Train again with the same folder — the partial upload '
+               + 'is re-used and overwritten safely.', 7000);
+    else if (st.last_failure && st.last_failure.status)
+      showNote('The last training run ended ' + st.last_failure.status
+               + ' — pick a folder to try again.');
+    trShowPanels({ data: true });
+  }).catch(() => trShowPanels({ data: true }));
+}
+
+async function trPick() {
+  if (!REAL) { showNote('Preview mode — in the installed app this opens a folder picker.'); return; }
+  const r = await pywebview.api.pick_training_folder();
+  if (!r || !r.ok) { if (r && r.error) showNote(r.error); return; }
+  TR.path = r.path;
+  document.getElementById('tr-path').textContent = r.path;
+  document.getElementById('tr-report').style.display = 'block';
+  document.getElementById('tr-counts').textContent = 'Reading the folder…';
+  ['tr-classes', 'tr-warnings', 'tr-blockers'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.innerHTML = '';
+  });
+  trShowPanels({ data: true });
+  const rep = await pywebview.api.analyze_training_folder(r.path);
+  trRenderReport(rep);
+}
+
+function trRenderReport(rep) {
+  const counts = document.getElementById('tr-counts');
+  const classesBox = document.getElementById('tr-classes');
+  const warnBox = document.getElementById('tr-warnings');
+  const blockBox = document.getElementById('tr-blockers');
+  TR.report = rep; TR.classId = null; TR.plan = null;
+  if (!rep || !rep.ok) {
+    counts.textContent = '';
+    blockBox.textContent = '✕ ' + ((rep && rep.error) || 'Could not read that folder.');
+    trShowPanels({ data: true });
+    return;
+  }
+  const parts = Object.keys(rep.splits).map(s => s + ': ' + rep.splits[s].boxed + ' labeled');
+  counts.textContent = 'Layout ' + rep.layout + ' · ' + parts.join(' · ');
+  classesBox.innerHTML = '';
+  if (rep.classes.length > 1) {
+    const head = document.createElement('div');
+    head.style.cssText = 'font-size:12.5px;font-weight:600;margin-bottom:4px';
+    head.textContent = 'This folder labels ' + rep.classes.length
+      + ' classes — Argus trains ONE. Pick the target:';
+    classesBox.appendChild(head);
+  }
+  rep.classes.forEach(c => {
+    const lab = document.createElement('label');
+    lab.style.cssText = 'display:flex;gap:8px;align-items:center;font-size:13px;padding:3px 0;cursor:pointer';
+    const rb = document.createElement('input');
+    rb.type = 'radio'; rb.name = 'tr-class'; rb.value = c.id;
+    rb.onchange = () => trChooseClass(c.id);
+    if (rep.classes.length === 1) rb.checked = true;
+    const span = document.createElement('span');
+    span.textContent = c.name + ' — ' + c.images + ' images, ' + c.boxes + ' boxes';
+    lab.append(rb, span);
+    classesBox.appendChild(lab);
+  });
+  warnBox.innerHTML = (rep.warnings || []).map(w => '⚠ ' + escapeHtml(w)).join('<br>');
+  blockBox.innerHTML = (rep.blockers || []).map(b => '✕ ' + escapeHtml(b)).join('<br>');
+  if (rep.blockers && rep.blockers.length) { trShowPanels({ data: true }); return; }
+  if (rep.classes.length === 1) trChooseClass(rep.classes[0].id);
+}
+
+async function trChooseClass(cid) {
+  TR.classId = cid;
+  if (!REAL) return;
+  const plan = await pywebview.api.plan_training(TR.report, cid);
+  TR.plan = plan;
+  const blockBox = document.getElementById('tr-blockers');
+  if (!plan || !plan.ok) {
+    blockBox.textContent = '✕ ' + ((plan && plan.error) || 'Could not plan the split.');
+    return;
+  }
+  if (plan.blockers && plan.blockers.length) {
+    blockBox.innerHTML = plan.blockers.map(b => '✕ ' + escapeHtml(b)).join('<br>');
+    trShowPanels({ data: true });
+    return;
+  }
+  blockBox.innerHTML = '';
+  document.getElementById('tr-cost').textContent = '≈ $' + plan.est_cost_usd;
+  document.getElementById('tr-cost-detail').textContent =
+    plan.train + ' TRAINING + ' + plan.test + ' TEST IMAGES'
+    + (plan.auto_split ? ' (SPLIT AUTOMATICALLY)' : '')
+    + ' · EST. ' + plan.est_hours + ' H AT ~US$4/TRAINING-HOUR · BILLED BY AWS';
+  document.getElementById('tr-confirm').value = '';
+  document.getElementById('tr-start').disabled = true;
+  trShowPanels({ data: true, gate: true });
+}
+
+function trGateCheck() {
+  document.getElementById('tr-start').disabled =
+    (document.getElementById('tr-confirm').value || '').trim().toUpperCase() !== 'TRAIN';
+}
+
+async function trStart() {
+  if (!REAL) { showNote('Preview mode — training works in the installed app.'); return; }
+  if (TR.classId == null || !TR.path || TR.running) return;
+  const cls = ((TR.report || {}).classes || []).find(c => c.id === TR.classId) || {};
+  // Claim the UI FIRST: the worker starts emitting events before the bridge
+  // promise resolves, and a reset-after-await would wipe those first lines
+  // (and an un-disabled button invites a double-start).
+  TR.running = true;
+  document.getElementById('tr-start').disabled = true;
+  trResetRail();
+  trShowPanels({ run: true });
+  let r = null;
+  try {
+    r = await pywebview.api.start_training(
+      { path: TR.path, class_id: TR.classId, class_name: cls.name });
+  } catch (e) { r = { ok: false, error: 'Could not reach the deployer: ' + e }; }
+  if (!r || !r.ok) {
+    TR.running = false;
+    showNote((r && r.error) || 'Could not start training.');
+    trShowPanels({ data: true, gate: true });   // back to the gate to retry
+    trGateCheck();
+    return;
+  }
+}
+
+async function trEnterWatch() {
+  trResetRail();
+  [0, 1, 2, 3].forEach(i => trRailStatus(i, 'done'));   // pipeline is already training
+  trRailStatus(4, 'running');
+  trFeedLine('re-attached — training continues in AWS even while this app is closed', null);
+  trShowPanels({ run: true });
+  try {
+    const r = await pywebview.api.watch_training();
+    if (!(r && r.ok)) trFeedLine((r && r.error) || 'Could not attach to the run.', false);
+  } catch (e) { trFeedLine('Could not attach: ' + e, false); }
+}
+
+function trResetRail() {
+  document.querySelectorAll('#tr-rail li').forEach((li, i) => {
+    li.classList.remove('on', 'done');
+    const d = li.querySelector('.dot'); if (d) d.textContent = String(i + 1);
+  });
+  const feed = document.getElementById('tr-feed'); if (feed) feed.innerHTML = '';
+  for (const k in trProg) delete trProg[k];
+  const el = document.getElementById('tr-elapsed'); if (el) el.textContent = '';
+}
+
+function trRailStatus(i, status) {
+  const li = document.querySelectorAll('#tr-rail li')[i];
+  if (!li) return;
+  li.classList.toggle('on', status === 'running');
+  li.classList.toggle('done', status === 'done');
+  if (status === 'done') { const d = li.querySelector('.dot'); if (d) d.textContent = ''; }
+}
+
+function trFeedLine(text, ok) {
+  const feed = document.getElementById('tr-feed'); if (!feed) return;
+  const tag = ok === true ? '  <span class="ok">OK</span>'
+            : ok === false ? '  <span class="ok" style="color:var(--caution)">FAIL</span>' : '';
+  const div = document.createElement('div');
+  div.innerHTML = '<span class="ts">' + new Date().toLocaleTimeString() + '</span>'
+    + escapeHtml(text) + tag;
+  feed.appendChild(div);
+  requestAnimationFrame(() => div.classList.add('show'));
+  feed.scrollTop = feed.scrollHeight;
+}
+
+function trProgressLine(phase, done, total) {
+  const feed = document.getElementById('tr-feed'); if (!feed) return;
+  let div = trProg[phase];
+  if (!div || !div.isConnected) {
+    div = document.createElement('div');
+    div.classList.add('show');
+    feed.appendChild(div);
+    trProg[phase] = div;
+  }
+  div.innerHTML = '<span class="ts">' + new Date().toLocaleTimeString() + '</span>'
+    + escapeHtml(phase) + '  ' + done + ' / ' + total;
+  feed.scrollTop = feed.scrollHeight;
+}
+
+function fmtElapsed(s) {
+  s = Math.max(0, s | 0);
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+  return h ? h + ' h ' + String(m).padStart(2, '0') + ' min' : m + ' min';
+}
+
+function trEvent(e) {
+  if (e.kind === 'train_phase') {
+    trRailStatus(e.index, e.status);
+    if (e.status === 'running') fireLock((e.label || '').toUpperCase());
+    if (e.status === 'done') triggerShutter(false);
+    return;
+  }
+  if (e.kind === 'train_log') { trFeedLine(e.line || '', e.ok); return; }
+  if (e.kind === 'train_progress') { trProgressLine(e.phase, e.done, e.total); return; }
+  if (e.kind === 'train_started') { trFeedLine('submitted: ' + e.version, true); return; }
+  if (e.kind === 'train_status') {
+    const el = document.getElementById('tr-elapsed');
+    if (el) el.textContent = (e.status || '').replace(/_/g, ' ').toLowerCase()
+      + ' · ' + fmtElapsed(e.elapsed || 0) + ' elapsed';
+    return;
+  }
+  if (e.kind === 'train_done') { trDone(e); return; }
+  if (e.kind === 'train_error') {
+    TR.running = false;
+    trFeedLine(e.message || 'Training failed.', false);
+    // Reopen the cost gate when a plan is still valid — on a single-class
+    // dataset the checked radio never fires onchange again, so without this
+    // there is no path back to the Start button short of re-picking.
+    const retry = !!(TR.plan && TR.plan.ok && (!TR.plan.blockers || !TR.plan.blockers.length));
+    trShowPanels({ data: true, gate: retry, run: true });
+    if (retry) {
+      document.getElementById('tr-confirm').value = '';
+      trGateCheck();
+    }
+    return;
+  }
+}
+
+function trF1Words(f1) {
+  if (f1 == null) return 'The engine did not report a score.';
+  if (f1 >= 0.9) return 'Strong: it finds most of what is there and is rarely wrong.';
+  if (f1 >= 0.7) return 'Workable: expect some misses and false alarms — more varied photos of the real scene improve it.';
+  return 'Weak: the model needs more, and more varied, labeled photos of the real deployment scene.';
+}
+
+function trDone(e) {
+  TR.running = false;
+  trRailStatus(5, 'done');
+  const f1 = (e.f1 != null) ? Number(e.f1) : null;
+  document.getElementById('tr-f1').textContent = f1 != null ? 'F1 ' + f1.toFixed(2) : 'Trained';
+  const wiredMsg = e.wired
+    ? ' Wired into ' + e.wired + ' camera(s) — new photos are scored by this model from now on.'
+    : ' NOT attached to any camera yet: no camera is set to use a custom model — open the dashboard camera settings to attach it.';
+  const billed = e.billable_s
+    ? ' AWS billed ' + fmtElapsed(e.billable_s) + ' of training time.' : '';
+  document.getElementById('tr-f1-note').textContent = trF1Words(f1) + wiredMsg + billed;
+  document.getElementById('tr-rollback').style.display = e.rollback ? '' : 'none';
+  document.getElementById('tr-rollback-msg').textContent = '';
+  trShowPanels({ run: true, result: true });
+  triggerShutter(false);
+}
+
+function trReset() {
+  TR.path = ''; TR.report = null; TR.classId = null; TR.plan = null;
+  document.getElementById('tr-path').textContent = '';
+  document.getElementById('tr-report').style.display = 'none';
+  ['tr-classes', 'tr-warnings', 'tr-blockers'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.innerHTML = '';
+  });
+  trShowPanels({ data: true });
+  trInit();
+}
+
+async function trRollback() {
+  if (!REAL) { showNote('Preview mode — rollback works in the installed app.'); return; }
+  if (!confirm('Point every camera back at the PREVIOUS model?')) return;
+  const msg = document.getElementById('tr-rollback-msg');
+  const say = t => {
+    if (msg && document.getElementById('tr-result').style.display !== 'none')
+      msg.textContent = t;
+    else showNote(t, 6000);   // called from the top button, result panel hidden
+  };
+  say('Rolling back…');
+  let r = null;
+  try { r = await pywebview.api.rollback_model(); }
+  catch (e) { r = { ok: false, error: 'Could not reach the deployer: ' + e }; }
+  if (r && r.ok) {
+    say('✓ Previous model restored on ' + r.wired + ' camera(s).'
+      + (r.f1 != null ? ' Its F1 was ' + Number(r.f1).toFixed(2) + '.' : '')
+      + ' If the newer model is currently running, stop it from the dashboard.');
+    document.getElementById('tr-rollback').style.display = 'none';
+    const rbTop = document.getElementById('tr-rollback-top');
+    if (rbTop) rbTop.style.display = 'none';
+    const cur = document.getElementById('tr-current');
+    if (cur && r.f1 != null) cur.textContent = 'Current model: F1 ' + Number(r.f1).toFixed(2);
+  } else say((r && r.error) || 'Rollback failed.');
+}
+
+/* advance the embedded-AWS guidance rail as AWS's own URL changes */
+function advanceAwsRail(url) {
+  const u = document.getElementById('aws-url');
+  if (u && url) u.textContent = url.replace(/^https?:\/\//, '').slice(0, 52);
+  const st = document.getElementById('aws-state');
+  if (st) st.textContent = 'CONNECTED \u00b7 AWS';
+  const items = document.querySelectorAll('#acct-rail li');
+  if (!items.length) return;
+  // Heuristic milestones from AWS signup/console URLs (URL only, never page content)
+  let step = 0;
+  if (/email|verify/i.test(url)) step = 1;
+  if (/payment|billing|credit/i.test(url)) step = 2;
+  if (/phone|identity|confirm/i.test(url)) step = 3;
+  if (/console\.aws|iam/i.test(url)) step = items.length - 1;
+  // A signed-in console (console home / IAM dashboard) means the account exists
+  // and the user is authenticated — the whole signup rail is moot.
+  const signedIn = /console\.aws\.amazon\.com\/(console\/home|iam)/i.test(url);
+  if (signedIn) step = items.length;
+  // Keep the CLICK counter in sync with the VISUAL rail. Before 2026-07-15 only
+  // the visuals advanced, so a signed-in user still had to click "Step complete"
+  // four times to get past a rail that already showed done.
+  acctStep = Math.min(step, items.length - 1);
+  items.forEach((li, i) => {
+    li.classList.toggle('done', i < step);
+    li.classList.toggle('on', i === step);
+    if (i < step) { const d = li.querySelector('.dot'); if (d) d.textContent = ''; }
+  });
+  if (signedIn) {
+    const hint = document.getElementById('aws-hint');
+    if (hint) hint.textContent = 'You are signed in — press “Step complete” once to continue.';
+    if (st) st.textContent = 'SIGNED IN · AWS';
+  }
+}
+</script>
+</body>
+</html>

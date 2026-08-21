@@ -1,0 +1,16 @@
+{
+  "LambdaFunctionConfigurations": [
+    {
+      "Id": "b1b84ffd-ffbc-48ab-82a2-1e6e77118d24",
+      "LambdaFunctionArn": "arn:aws:lambda:us-east-1:366356442579:function:pest-detection-processor",
+      "Events": ["s3:ObjectCreated:*"],
+      "Filter": {
+        "Key": {
+          "FilterRules": [
+            { "Name": "Prefix", "Value": "frames/" }
+          ]
+        }
+      }
+    }
+  ]
+}

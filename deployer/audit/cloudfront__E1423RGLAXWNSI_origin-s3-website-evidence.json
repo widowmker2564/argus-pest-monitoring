@@ -1,0 +1,17 @@
+{
+  "_note": "Evidence that the CloudFront origin is an S3 STATIC-WEBSITE endpoint, not a REST S3 origin. deploy.py must enable S3 website hosting on the dashboard bucket AND wire CloudFront to the website endpoint domain with OriginProtocolPolicy=http-only. The SPA fallback (403/404 -> index.html) is handled by the S3 website ErrorDocument, NOT by CloudFront CustomErrorResponses (which are empty on this distribution).",
+  "cloudfront_origin_domain": "pest-dashboard-366356442579.s3-website-us-east-1.amazonaws.com",
+  "s3_bucket": "pest-dashboard-366356442579",
+  "s3_get_bucket_website": {
+    "IndexDocument": { "Suffix": "index.html" },
+    "ErrorDocument": { "Key": "index.html" }
+  },
+  "cache_policy_verified": {
+    "Id": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+    "Name": "Managed-CachingDisabled",
+    "AWS_managed": true
+  },
+  "distribution_tags": [],
+  "distribution_status": "Deployed",
+  "distribution_domain": "d1twcdquexdgj8.cloudfront.net"
+}

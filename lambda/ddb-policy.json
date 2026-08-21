@@ -1,0 +1,24 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DynamoDBAllPestTables",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:Scan",
+        "dynamodb:Query"
+      ],
+      "Resource": [
+        "arn:aws:dynamodb:us-east-1:366356442579:table/pest-monitoring-system-config",
+        "arn:aws:dynamodb:us-east-1:366356442579:table/pest-monitoring-cameras",
+        "arn:aws:dynamodb:us-east-1:366356442579:table/pest-monitoring-detections",
+        "arn:aws:dynamodb:us-east-1:366356442579:table/pest-monitoring-detections/index/*",
+        "arn:aws:dynamodb:us-east-1:366356442579:table/pest-monitoring-schedule-logs"
+      ]
+    }
+  ]
+}

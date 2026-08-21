@@ -1,0 +1,20 @@
+{
+  "_description": "How fyp-pillow is consumed. pest-detection-processor is the only consumer; it depends on Pillow (PIL) for image/bbox drawing.",
+  "consumer_function": "pest-detection-processor",
+  "consumer_runtime": "python3.12",
+  "consumer_architectures": ["x86_64"],
+  "consumer_handler": "lambda_function.lambda_handler",
+  "attached_layers": [
+    {
+      "Arn": "arn:aws:lambda:us-east-1:366356442579:layer:fyp-pillow:2",
+      "CodeSize": 7888247
+    }
+  ],
+  "layer_source_zip_location": "NOT_IN_S3 (lambda-layers-366356442579 bucket contains only ffmpeg-layer.zip; fyp-pillow was published directly from local build)",
+  "pillow_provides": "Pillow 12.2.0, cp312, manylinux2014_x86_64 (matches python3.12 Lambda runtime, x86_64 arch). Layer zip structure is python/PIL/... including the compiled _imaging*.so C-extension and the pillow.libs directory.",
+  "pillow_version_exact": "12.2.0",
+  "build_artifact_name": "fyp-pillow-12.2.0-py312-x86_64.zip",
+  "v1_failure_lesson": "fyp-pillow:1 was broken: it was missing the compiled _imaging*.so C-extension, so import PIL succeeded at build but failed at runtime and no bbox was ever drawn. Fix was rebuilding correctly with the C-extension + pillow.libs and republishing as fyp-pillow:2. deploy.py MUST verify _imaging*.so and pillow.libs are present in the zip before publishing.",
+  "version_source": "Recorded in local repo docs (docs/history/HANDOFF_W8_Thursday.md, _archive Interim_Report_Qian_Runzhe_v3). AWS metadata does not store the pip version; only the description 'Self-built Pillow for pest-detection-processor' on v1.",
+  "recreate_note": "deploy.py must build fyp-pillow from scratch and pin Pillow==12.2.0 for cp312 / manylinux2014_x86_64 (see deploy_notes)."
+}

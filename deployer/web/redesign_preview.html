@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARGUS — Deploy (redesign preview)</title>
+<style>
+  /* ============================================================
+     ARGUS deployer — redesign preview
+     Keeps the committed light liquid-glass + machine-eye identity;
+     elevated with double-bezel depth, macro whitespace, tabular
+     numerics, tinted shadows, orchestrated aperture motion.
+     Deliberately single-world (light) — the product's identity.
+     ============================================================ */
+  :root{
+    --void:#e7ebf1;              /* cool off-white, blue-biased */
+    --void-2:#eef1f6;
+    --ink:#14161a;               /* cool near-black */
+    --ink-2:#3a3e47;
+    --muted:#646a78;
+    --faint:#9096a3;
+    --hair:rgba(20,30,50,.10);
+    --hair-2:rgba(20,30,50,.18);
+    --glass:rgba(255,255,255,.50);
+    --glass-hi:rgba(255,255,255,.72);
+    --teal:#0a84ff;              /* the iris light — the one accent */
+    --violet:#7b52d6;
+    --iris-grad:linear-gradient(112deg,#14161a 2%,#0a84ff 52%,#7b52d6 98%);
+    --ok:#1f8f43; --ok-ink:#0b3d1c;
+    --caution:#c9491f;
+    --mono:ui-monospace,"SF Mono","Cascadia Code","Segoe UI Mono",Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
+    --e-out:cubic-bezier(.16,1,.3,1);
+    --e-snap:cubic-bezier(.34,1.28,.42,1);
+    --e-quiet:cubic-bezier(.4,0,.2,1);
+    /* liquid-glass rim — the dashboard v5.2 recipe, refined */
+    --rim:
+      inset 1.5px -1.5px 1px -.5px rgba(255,255,255,1),
+      inset -1.5px 1.5px 1px -.5px rgba(255,255,255,.9),
+      inset 0 0 1.5px rgba(20,30,50,.22);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    font-family:var(--sans);
+    background:var(--void);
+    color:var(--ink);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  button{font:inherit;color:inherit;cursor:pointer;background:none;border:none}
+  :focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:8px}
+
+  /* ---------- ambient atmosphere (GPU-safe: transform drift only) ---------- */
+  /* static ambient glow — soft radial gradients, NO filter:blur (a blurred
+     58vw layer is the single most expensive thing to composite) */
+  #atmosphere{position:fixed;inset:0;z-index:-2;pointer-events:none}
+  #iris{position:fixed;inset:0;z-index:-1;pointer-events:none}
+  #grain{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.03;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>")}
+
+  /* ---------- titlebar (liquid glass) ---------- */
+  .bar{position:fixed;top:0;left:0;right:0;height:56px;z-index:40;
+    display:flex;align-items:center;justify-content:space-between;padding:0 28px;
+    background:var(--glass);backdrop-filter:blur(20px) saturate(150%);
+    -webkit-backdrop-filter:blur(20px) saturate(150%);
+    border-bottom:1px solid var(--hair)}
+  .mark{display:flex;align-items:center;gap:11px;font-size:14px;font-weight:600;letter-spacing:.02em}
+  .mark .sub{color:var(--muted);font-weight:400;letter-spacing:.16em;font-size:11px;font-family:var(--mono);
+    text-transform:uppercase;margin-top:1px}
+  .bar a{color:var(--muted);font-size:13px;text-decoration:none;transition:color .18s}
+  .bar a:hover{color:var(--ink)}
+  .steps{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:7px}
+  .steps i{width:22px;height:3px;border-radius:3px;background:var(--hair-2);transition:background .5s var(--e-out)}
+  .steps i.on{background:var(--teal)}
+  .steps i.done{background:var(--ink-2)}
+
+  /* ---------- screen shell ---------- */
+  .screen{position:fixed;inset:56px 0 0 0;z-index:10;overflow-y:auto;display:none}
+  .screen.on{display:block}
+  .wrap{max-width:720px;margin:0 auto;padding:72px 40px 120px}
+  .rv{opacity:0;transform:translateY(20px);filter:blur(6px)}
+  .on .rv{animation:rise .9s var(--e-out) both;animation-delay:calc(var(--i,0)*80ms)}
+  @keyframes rise{to{opacity:1;transform:none;filter:none}}
+
+  .eyebrow{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.28em;
+    color:var(--muted);margin-bottom:18px}
+  .eyebrow b{color:var(--teal);font-weight:500}
+  h1{font-size:clamp(46px,6.3vw,82px);font-weight:700;letter-spacing:-.032em;line-height:1.02;text-wrap:balance}
+  h2{font-size:35px;font-weight:700;letter-spacing:-.024em;line-height:1.08;text-wrap:balance;margin-bottom:14px}
+  .grad{background:var(--iris-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{font-size:17px;line-height:1.55;color:var(--muted);max-width:52ch}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+  /* ---------- buttons (liquid glass pill + nested icon) ---------- */
+  .btn{display:inline-flex;align-items:center;gap:11px;border-radius:980px;
+    padding:13px 15px 13px 26px;font-size:15px;font-weight:500;color:var(--ink);
+    background:var(--glass-hi);backdrop-filter:blur(8px) saturate(160%);
+    -webkit-backdrop-filter:blur(8px) saturate(160%);
+    border:1px solid var(--hair);box-shadow:var(--rim);
+    transition:background .2s var(--e-quiet),transform .32s var(--e-snap),box-shadow .2s}
+  .btn:hover{background:#fff}
+  .btn:active{transform:scale(.97)}
+  .btn .cap{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;
+    background:rgba(20,30,50,.06);transition:transform .32s var(--e-snap),background .2s}
+  .btn:hover .cap{transform:translate(2px,-1px);background:rgba(10,132,255,.12)}
+  .btn.primary{background:var(--teal);color:#fff;border-color:transparent;padding-left:28px;
+    box-shadow:0 8px 24px -8px rgba(10,132,255,.6),
+      inset 1.5px -1.5px 1px -.5px rgba(255,255,255,.4),
+      inset -1.5px 1.5px 1px -.5px rgba(255,255,255,.25)}
+  .btn.primary:hover{background:#2a95ff}
+  .btn.primary .cap{background:rgba(255,255,255,.22)}
+  .btn.primary .cap svg{stroke:#fff}
+  .btn[disabled]{opacity:.4;cursor:default;transform:none}
+  .btn.ghost{background:none;border:none;box-shadow:none;color:var(--muted);padding-left:6px}
+  .btn.ghost:hover{color:var(--ink);background:none}
+  .nav{display:flex;justify-content:space-between;align-items:center;margin-top:52px;
+    padding-top:28px;border-top:1px solid var(--hair)}
+
+  /* ---------- welcome hero ---------- */
+  #welcome .wrap{min-height:calc(100vh - 56px);display:flex;flex-direction:column;
+    align-items:center;justify-content:flex-end;text-align:center;padding-bottom:10vh}
+  #welcome h1{max-width:16ch}
+  #welcome .lede{margin:22px auto 36px;text-align:center}
+  .tape{margin-top:52px;font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;
+    color:var(--faint);text-transform:uppercase}
+
+  /* ---------- double-bezel glass card (the taste "Doppelrand") ---------- */
+  .shell{background:rgba(255,255,255,.34);border:1px solid var(--hair);border-radius:26px;
+    padding:7px;box-shadow:0 24px 60px -30px rgba(20,30,50,.28)}
+  .core{background:var(--glass);backdrop-filter:blur(14px) saturate(160%);
+    -webkit-backdrop-filter:blur(14px) saturate(160%);
+    border-radius:20px;padding:30px 32px;box-shadow:var(--rim)}
+  .eyebrow.card{margin-bottom:22px}
+
+  .field{margin-top:22px}
+  .field:first-child{margin-top:0}
+  .field label{display:block;font-size:12px;font-weight:600;letter-spacing:.01em;margin-bottom:8px}
+  .field label .req{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--caution);margin-left:8px}
+  .in{width:100%;font-family:var(--mono);font-size:14px;color:var(--ink);letter-spacing:.01em;
+    background:rgba(255,255,255,.55);border:1px solid var(--hair-2);border-radius:11px;
+    padding:13px 15px;box-shadow:inset 1px -1px 1px -.5px rgba(255,255,255,.9);
+    transition:border-color .2s,box-shadow .2s}
+  .in:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(10,132,255,.16)}
+  .in::placeholder{color:var(--faint)}
+  select.in{appearance:none;font-family:var(--sans);font-size:15px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23646a78' stroke-width='1.6'><path d='M1 1.5 6 6.5l5-5'/></svg>");
+    background-repeat:no-repeat;background-position:right 15px center}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:640px){.row2{grid-template-columns:1fr}}
+  .hint{font-size:12px;color:var(--faint);margin-top:8px;line-height:1.5}
+
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;gap:20px;
+    padding:18px 0;border-top:1px solid var(--hair)}
+  .toggle-row:first-of-type{margin-top:8px}
+  .toggle-row h4{font-size:14.5px;font-weight:600}
+  .toggle-row p{font-size:12.5px;color:var(--faint);margin-top:3px;max-width:42ch;line-height:1.5}
+  .tgl{position:relative;width:46px;height:27px;border-radius:980px;background:rgba(20,30,50,.16);
+    flex:none;transition:background .25s var(--e-snap);box-shadow:inset 0 1px 2px rgba(20,30,50,.14)}
+  .tgl::after{content:"";position:absolute;top:2.5px;left:2.5px;width:22px;height:22px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 3px rgba(20,30,50,.28);transition:transform .3s var(--e-snap)}
+  .tgl[aria-checked="true"]{background:var(--ok)}
+  .tgl[aria-checked="true"]::after{transform:translateX(19px)}
+
+  /* ---------- deploy theater ---------- */
+  #deploy .wrap{max-width:760px;text-align:center;padding-top:23vh}
+  .fstop{display:flex;justify-content:center;align-items:baseline;gap:5px;font-family:var(--mono);
+    font-variant-numeric:tabular-nums;margin-top:4px}
+  .fstop .n{font-size:30px;font-weight:600;letter-spacing:-.01em}
+  .fstop .u{font-size:13px;color:var(--muted);letter-spacing:.06em}
+  .simtag{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--muted);border:1px solid var(--hair-2);
+    border-radius:7px;padding:5px 11px;margin-bottom:26px}
+  .simtag .dot{width:6px;height:6px;border-radius:50%;background:var(--teal);
+    box-shadow:0 0 8px var(--teal);animation:pulse 1.6s var(--e-quiet) infinite}
+  @keyframes pulse{50%{opacity:.35}}
+  .feed{margin:34px auto 0;max-width:520px;text-align:left;font-family:var(--mono);
+    font-variant-numeric:tabular-nums;font-size:12.5px;line-height:2.15;color:var(--muted)}
+  .feed div{opacity:0;transform:translateY(8px);transition:opacity .45s var(--e-out),transform .5s var(--e-out)}
+  .feed div.show{opacity:1;transform:none}
+  .feed .ts{color:var(--faint);margin-right:14px}
+  .feed .ok{color:var(--ok)}
+  .progress{height:3px;border-radius:3px;background:var(--hair-2);max-width:520px;margin:30px auto 0;overflow:hidden}
+  .progress i{display:block;height:100%;width:0;border-radius:3px;background:var(--iris-grad);
+    transition:width .7s var(--e-out)}
+  .tcta{margin-top:38px;min-height:52px}
+  .tcta .btn{opacity:0}
+  .tcta .btn.show{animation:rise .6s var(--e-snap) both}
+
+  /* ---------- done ---------- */
+  #done .wrap{max-width:640px;text-align:center;padding-top:26vh}
+  #done h1{font-size:clamp(58px,8.6vw,104px);letter-spacing:-.035em}
+  #done .lede{margin:20px auto 38px;text-align:center}
+  .urlrow{display:flex;gap:10px;max-width:520px;margin:0 auto}
+  .urlrow .in{flex:1;text-align:left}
+  .copy{display:grid;place-items:center;width:48px;border-radius:11px;background:var(--glass-hi);
+    border:1px solid var(--hair);box-shadow:var(--rim);transition:background .2s}
+  .copy:hover{background:#fff}
+  .nextrows{max-width:520px;margin:40px auto 0;text-align:left}
+  .nextrows button{width:100%;display:flex;justify-content:space-between;align-items:center;
+    padding:16px 6px;border-top:1px solid var(--hair);font-size:14.5px;color:var(--ink);transition:padding .2s}
+  .nextrows button:last-child{border-bottom:1px solid var(--hair)}
+  .nextrows button:hover{padding-left:12px}
+  .nextrows .go{width:13px;height:13px;color:var(--faint)}
+  .closing{margin-top:46px;font-size:12.5px;color:var(--faint)}
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+    .rv{opacity:1!important;transform:none!important;filter:none!important}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="atmosphere"></canvas>
+<canvas id="iris"></canvas>
+<div id="grain"></div>
+
+<header class="bar">
+  <div class="mark">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#14161a" stroke-width="1.1">
+      <circle cx="11" cy="11" r="9.3" opacity=".5"/>
+      <g opacity=".85">
+        <line x1="11" y1="2.6" x2="11" y2="6.5"/><line x1="16.5" y1="4.6" x2="14.2" y2="7.7"/>
+        <line x1="19.4" y1="9.7" x2="15.7" y2="10.5"/><line x1="18.3" y1="15.3" x2="15" y2="13.3"/>
+        <line x1="13.6" y1="19" x2="12.6" y2="15.4"/><line x1="8.4" y1="19" x2="9.4" y2="15.4"/>
+        <line x1="3.7" y1="15.3" x2="7" y2="13.3"/><line x1="2.6" y1="9.7" x2="6.3" y2="10.5"/>
+        <line x1="5.5" y1="4.6" x2="7.8" y2="7.7"/>
+      </g>
+      <circle cx="11" cy="11" r="2.4" fill="#0a84ff" stroke="none"/>
+    </svg>
+    <div>ARGUS<div class="sub">Setup</div></div>
+  </div>
+  <div class="steps" id="steps"><i></i><i></i><i></i><i></i></div>
+  <a href="#" onclick="return false">Exit setup</a>
+</header>
+
+<!-- ===== WELCOME ===== -->
+<section class="screen on" id="welcome">
+  <div class="wrap">
+    <p class="eyebrow rv" style="--i:5">Own-account deploy&ensp;·&ensp;<b>one sitting</b></p>
+    <h1 class="rv" style="--i:6">Vision,<br><span class="grad">deployed.</span></h1>
+    <p class="lede rv" style="--i:7">Train Argus on anything you need to watch. Stand the whole cloud
+      up on your own AWS in one sitting. It watches — you hear from it only when something moves.</p>
+    <div class="rv" style="--i:8">
+      <button class="btn primary" onclick="go('configure')">Begin setup
+        <span class="cap"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 6h9M7 2.5 10.5 6 7 9.5"/></svg></span>
+      </button>
+    </div>
+    <p class="tape rv" style="--i:10">Aperture ready&ensp;·&ensp;us-east-1&ensp;·&ensp;no card until you deploy</p>
+  </div>
+</section>
+
+<!-- ===== CONFIGURE ===== -->
+<section class="screen" id="configure">
+  <div class="wrap">
+    <p class="eyebrow rv" style="--i:0">Step 02&ensp;·&ensp;<b>Configure</b></p>
+    <h2 class="rv" style="--i:1">What should Argus watch?</h2>
+    <p class="lede rv" style="--i:2">These become the names on your own AWS. You can change the label
+      any time — the model retrains on whatever you point it at.</p>
+
+    <div class="shell rv" style="--i:3;margin-top:32px">
+      <div class="core">
+        <div class="field">
+          <label>Target label<span class="req">REQUIRED</span></label>
+          <input class="in" value="armyworm-larva" spellcheck="false">
+          <p class="hint">The one thing each camera looks for. Singular, lowercase, hyphenated.</p>
+        </div>
+        <div class="row2" style="margin-top:22px">
+          <div class="field" style="margin:0">
+            <label>Deployment name</label>
+            <input class="in" value="jewel-pest-watch" spellcheck="false">
+          </div>
+          <div class="field" style="margin:0">
+            <label>Region</label>
+            <select class="in"><option>us-east-1 · N. Virginia</option><option>ap-southeast-1 · Singapore</option></select>
+          </div>
+        </div>
+
+        <div class="toggle-row">
+          <div><h4>Live streaming</h4><p>Bring camera feeds into the dashboard over Kinesis Video.</p></div>
+          <button class="tgl" role="switch" aria-checked="true" onclick="this.setAttribute('aria-checked',this.getAttribute('aria-checked')==='true'?'false':'true')"></button>
+        </div>
+        <div class="toggle-row">
+          <div><h4>Outbreak alerts</h4><p>Email the operator when detections cross a threshold in a window.</p></div>
+          <button class="tgl" role="switch" aria-checked="false" onclick="this.setAttribute('aria-checked',this.getAttribute('aria-checked')==='true'?'false':'true')"></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav rv" style="--i:4">
+      <button class="btn ghost" onclick="go('welcome')">← Back</button>
+      <button class="btn primary" onclick="go('deploy'); runDeploy()">Review &amp; deploy
+        <span class="cap"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 6h9M7 2.5 10.5 6 7 9.5"/></svg></span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DEPLOY THEATER ===== -->
+<section class="screen" id="deploy">
+  <div class="wrap">
+    <div class="simtag"><span class="dot"></span> Deploying to your account</div>
+    <div class="fstop"><span class="n" id="fnum">f/16</span></div>
+    <h2 style="margin-top:14px">Opening the aperture.</h2>
+    <p class="lede" style="margin:12px auto 0;max-width:46ch">Fifteen resources, created in order on your own
+      AWS. Close the app if you like — it keeps going in the cloud.</p>
+    <div class="progress"><i id="pbar"></i></div>
+    <div class="feed" id="feed"></div>
+    <div class="tcta" id="tcta"></div>
+  </div>
+</section>
+
+<!-- ===== DONE ===== -->
+<section class="screen" id="done">
+  <div class="wrap">
+    <p class="eyebrow rv" style="--i:0"><b>Live</b>&ensp;·&ensp;15 / 15 resources</p>
+    <h1 class="rv" style="--i:1"><span class="grad">Watching.</span></h1>
+    <p class="lede rv" style="--i:2">Argus is up on your account. Open the dashboard, add an operator,
+      and point a camera at what matters.</p>
+    <div class="urlrow rv" style="--i:3">
+      <input class="in mono" readonly value="https://d1twcdquexdgj8.cloudfront.net">
+      <button class="copy" title="Copy"><svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="#14161a" stroke-width="1.3"><rect x="4.5" y="4.5" width="8" height="8" rx="1.6"/><path d="M2.5 10.5V3a1 1 0 0 1 1-1h7"/></svg></button>
+    </div>
+    <div class="nextrows rv" style="--i:4">
+      <button>Create an operator account<svg class="go" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 2.5 7.5 6 4 9.5"/></svg></button>
+      <button>Add your first camera<svg class="go" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 2.5 7.5 6 4 9.5"/></svg></button>
+      <button>Train the vision model<svg class="go" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 2.5 7.5 6 4 9.5"/></svg></button>
+    </div>
+    <p class="closing rv" style="--i:5">You can tear the whole thing down from Settings — one confirmation, nothing left behind.</p>
+  </div>
+</section>
+
+<script>
+(() => {
+"use strict";
+const REDUCED = matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+/* ============ APERTURE ENGINE — ported from the original ARGUS deployer:
+   9 congruent circular-segment blades = a real camera iris; continuous
+   animation; the shutter snaps on each deploy stage / on eye-click / ambient.
+   Redesign colours + per-screen framing kept. ============================== */
+const cv = document.getElementById("iris");
+const g2 = cv.getContext("2d");
+const DPR = Math.min(devicePixelRatio || 1, 1.5);
+let W = 0, H = 0;
+function resize(){ W = innerWidth; H = innerHeight; cv.width = W*DPR; cv.height = H*DPR;
+  cv.style.width = W+"px"; cv.style.height = H+"px"; g2.setTransform(DPR,0,0,DPR,0,0); }
+resize(); addEventListener("resize", resize);
+
+/* aperture state, lerped toward per-screen targets */
+const AP = { x:.5, y:.42, r:0, open:0, alpha:0, field:0,
+             tx:.5, ty:.42, tr:260, topen:.84, talpha:1, tfield:1 };
+const PRESETS = {
+  welcome:  { x:.5,  y:.42, r:()=>Math.min(H*.30,270), open:.84, alpha:1,   field:1  },
+  configure:{ x:.75, y:.5,  r:()=>Math.min(H*.34,300), open:.84, alpha:.45, field:.8 },
+  deploy:   { x:.5,  y:.36, r:()=>Math.min(H*.22,200), open:.10, alpha:1,   field:.9 },
+  done:     { x:.5,  y:.40, r:()=>Math.min(H*.24,220), open:1,   alpha:1,   field:1  },
+};
+function applyScreen(id){ const p = PRESETS[id]; if(!p) return;
+  AP.tx=p.x; AP.ty=p.y; AP.tr=p.r(); AP.topen=p.open; AP.talpha=p.alpha; AP.tfield=p.field; }
+
+/* drifting particle field seen through the opening */
+const NP = REDUCED ? 90 : 240;
+const parts = [];
+for(let i=0;i<NP;i++){ const z=.2+Math.random()*.8;
+  parts.push({ u:Math.random()*2-1, v:Math.random()*2-1, z, a:Math.random()*Math.PI*2,
+    sp:(4+Math.random()*6)/60, teal:Math.random()<.06, violet:Math.random()<.02 }); }
+let mouseX=0, mouseY=0, mx=0, my=0;
+addEventListener("mousemove", e=>{ mouseX=(e.clientX/W-.5)*2; mouseY=(e.clientY/H-.5)*2; });
+
+/* ---- shutter: blades slam shut then spring open ---- */
+const SH = { t:-1, next: 5 + Math.random()*7 };
+function snapFactor(){
+  if(SH.t < 0) return 1;
+  const t = SH.t;
+  if(t < 0.09) return 1 - (t/0.09)*0.94;                          // slam shut
+  if(t < 0.16) return 0.06;                                       // hold closed
+  if(t < 0.55){ const p=(t-0.16)/0.39; return 0.06 + 0.94*(1-Math.pow(1-p,3)); } // spring
+  return 1;
+}
+let audioCtx = null;
+function shutterSound(){
+  try{
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    const t0 = audioCtx.currentTime;
+    [0,0.07].forEach((off,k)=>{
+      const len = Math.floor(audioCtx.sampleRate*0.03);
+      const buf = audioCtx.createBuffer(1,len,audioCtx.sampleRate);
+      const d = buf.getChannelData(0);
+      for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2);
+      const s = audioCtx.createBufferSource(); s.buffer=buf;
+      const g = audioCtx.createGain(); g.gain.value = k===0?0.11:0.06;
+      s.connect(g); g.connect(audioCtx.destination); s.start(t0+off);
+    });
+  }catch(e){}
+}
+function triggerShutter(click){
+  if(REDUCED || AP.alpha < 0.5) return;
+  SH.t = 0; SH.next = 6 + Math.random()*9;
+  if(click) shutterSound();
+}
+window.triggerShutter = triggerShutter;
+document.addEventListener("pointerdown", e=>{
+  if(AP.alpha < 0.5) return;
+  if(e.target.closest("button,a,input,select,.core")) return;
+  const dx = e.clientX - AP.x*W, dy = e.clientY - AP.y*H;
+  if(Math.hypot(dx,dy) <= AP.r*1.15) triggerShutter(true);
+});
+
+let ringProg = REDUCED ? 1 : 0, breath = 0, last = performance.now();
+function draw(now){
+  const dt = Math.min((now-last)/1000, .05); last = now;
+  const L = REDUCED ? 1 : .07;
+  AP.x+=(AP.tx-AP.x)*L; AP.y+=(AP.ty-AP.y)*L; AP.r+=(AP.tr-AP.r)*L; AP.open+=(AP.topen-AP.open)*L;
+  AP.alpha+=(AP.talpha-AP.alpha)*L; AP.field+=(AP.tfield-AP.field)*L;
+  mx+=(mouseX-mx)*.06; my+=(mouseY-my)*.06;
+  if(ringProg<1) ringProg=Math.min(1,ringProg+dt/.8);
+  breath+=dt;
+  if(SH.t>=0){ SH.t+=dt; if(SH.t>0.6) SH.t=-1; }
+  else if(!REDUCED && AP.alpha>0.5){ SH.next-=dt; if(SH.next<=0) triggerShutter(false); }
+  const snap = snapFactor();
+  const pulse = Math.max(0, 1-snap);
+  window.__shutterSnap = snap; window.__shutterPulse = pulse;   // fed to the WebGL atmosphere
+
+  g2.clearRect(0,0,W,H);
+  if(AP.alpha < .01){ requestAnimationFrame(draw); return; }
+
+  const cx = AP.x*W + (REDUCED?0:-mx*3);
+  const cy = AP.y*H + (REDUCED?0:-my*3);
+  const R = AP.r * (1 + (REDUCED?0:Math.sin(breath*2*Math.PI/7)*.008));
+  const open = AP.open * snap;
+  const rh = Math.max(2, open*R*.62);
+  const K = 9, twist = (1-open)*.35;
+
+  const px=[], py=[];
+  for(const p of parts){
+    if(!REDUCED){
+      p.a += (Math.sin(now/3000 + p.z*9)*.5)*dt;
+      p.u += Math.cos(p.a)*p.sp*dt; p.v += Math.sin(p.a)*p.sp*dt;
+      if(p.u>1.3) p.u=-1.3; if(p.u<-1.3) p.u=1.3;
+      if(p.v>1.3) p.v=-1.3; if(p.v<-1.3) p.v=1.3;
+    }
+    px.push(cx + p.u*R + mx*10*p.z);
+    py.push(cy + p.v*R + my*10*p.z);
+  }
+  function paintField(am){
+    for(let i=0;i<parts.length;i++){
+      const p = parts[i];
+      const base = p.teal ? "rgba(10,132,255," : p.violet ? "rgba(123,82,214," : "rgba(20,22,26,";
+      const a = (p.teal?.4 : p.violet?.35 : .1+p.z*.25) * am;
+      g2.fillStyle = base + a + ")";
+      g2.beginPath(); g2.arc(px[i], py[i], (0.6+p.z*1.6), 0, 7); g2.fill();
+    }
+  }
+
+  g2.globalAlpha = AP.alpha;
+
+  paintField(.25*AP.field);                                   // faint bleed everywhere
+
+  g2.save(); g2.beginPath(); g2.arc(cx,cy,R,0,7); g2.clip();  // brighter inside the disk
+  paintField(.55*AP.field); g2.restore();
+
+  g2.save(); g2.beginPath();                                  // brightest inside the hole
+  const rv = rh/Math.cos(Math.PI/K);
+  for(let k=0;k<=K;k++){ const a=twist+(k+.5)*2*Math.PI/K;
+    const vx=cx+Math.cos(a)*rv, vy=cy+Math.sin(a)*rv; k?g2.lineTo(vx,vy):g2.moveTo(vx,vy); }
+  g2.clip(); paintField(1*AP.field);
+  const cg = g2.createRadialGradient(cx,cy,0,cx,cy,rh);
+  cg.addColorStop(0,"rgba(10,132,255,"+(.16*AP.field)+")"); cg.addColorStop(1,"rgba(10,132,255,0)");
+  g2.fillStyle=cg; g2.fillRect(cx-rh,cy-rh,rh*2,rh*2); g2.restore();
+
+  /* 9 congruent blades — the iris. Two passes: all fills, then all edges, so a
+     later blade's fill can't erase an earlier blade's edge (the original's
+     painter's-order fix). */
+  if(rh < R-1){
+    const phi = Math.acos(Math.min(1, rh/R));
+    g2.fillStyle = "#e6eaf1";
+    for(let k=0;k<K;k++){ const a=twist+k*2*Math.PI/K;
+      g2.beginPath(); g2.arc(cx,cy,R,a-phi,a+phi); g2.closePath(); g2.fill(); }
+    g2.strokeStyle = "rgba(30,40,60,.30)"; g2.lineWidth = 1;
+    for(let k=0;k<K;k++){ const a=twist+k*2*Math.PI/K;
+      const tx=cx+Math.cos(a)*rh, ty=cy+Math.sin(a)*rh;
+      const ex=cx+Math.cos(a+phi)*R, ey=cy+Math.sin(a+phi)*R;
+      g2.beginPath(); g2.moveTo(tx,ty); g2.lineTo(ex,ey); g2.stroke(); }
+  }
+
+  /* progress ring around the housing */
+  g2.strokeStyle = "rgba(30,40,60,.28)"; g2.lineWidth = 1;
+  g2.beginPath(); g2.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+ringProg*2*Math.PI); g2.stroke();
+
+  /* capture flash — a white bloom over the eye at the shut instant (the
+     original did this in a WebGL shader; here it is a Canvas2D radial) */
+  if(pulse > 0.01){
+    const fr = R*0.95;
+    const fg = g2.createRadialGradient(cx,cy,0,cx,cy,fr);
+    fg.addColorStop(0,"rgba(255,255,255,"+(0.5*pulse)+")");
+    fg.addColorStop(.5,"rgba(214,234,255,"+(0.2*pulse)+")");
+    fg.addColorStop(1,"rgba(214,234,255,0)");
+    g2.fillStyle=fg; g2.beginPath(); g2.arc(cx,cy,fr,0,7); g2.fill();
+  }
+
+  g2.globalAlpha = 1;
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+
+/* ================= UI: screen nav + deploy theater ================= */
+const order = ["welcome","configure","deploy","done"];
+window.go = id => {
+  document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id===id));
+  const sc = document.getElementById(id); if(sc) sc.scrollTop = 0;
+  applyScreen(id);
+  const idx = order.indexOf(id);
+  document.querySelectorAll("#steps i").forEach((el,k) => el.className = k<idx?"done":k===idx?"on":"");
+};
+go("welcome");
+
+const stages = [
+  ["IAM roles and policies", "f/11"],
+  ["DynamoDB tables · 4", "f/8"],
+  ["Storage + upload trigger", "f/5.6"],
+  ["Lambda functions · 5", "f/4"],
+  ["API Gateway + operator sign-in", "f/2.8"],
+  ["CloudFront distribution", "f/2"],
+  ["Vision engine (Rekognition) ready", "f/1.4"],
+];
+let running = false;
+window.runDeploy = () => {
+  if(running) return; running = true;
+  const feed=document.getElementById("feed"), bar=document.getElementById("pbar"),
+        fnum=document.getElementById("fnum"), tcta=document.getElementById("tcta");
+  feed.innerHTML=""; bar.style.width="0%"; tcta.innerHTML=""; fnum.textContent="f/16";
+  AP.topen = 0.10;
+  const t0 = performance.now();
+  stages.forEach((s,i)=>{
+    setTimeout(()=>{
+      const el = document.createElement("div");
+      const ms = ((performance.now()-t0)/1000).toFixed(1).padStart(4,"0");
+      el.innerHTML = "<span class='ts'>+"+ms+"s</span><span class='ok'>✓</span>&ensp;"+s[0];
+      feed.appendChild(el);
+      requestAnimationFrame(()=>el.classList.add("show"));
+      fnum.textContent = s[1];
+      bar.style.width = ((i+1)/stages.length*100)+"%";
+      AP.topen = 0.14 + (i+1)/stages.length*0.74;   // aperture opens as the f-stop widens
+      triggerShutter(false);                         // the camera "captures" each resource
+      feed.parentElement.scrollTop = 1e9;
+      if(i===stages.length-1){
+        setTimeout(()=>{
+          AP.topen = 0.95;
+          tcta.innerHTML = "<button class='btn primary' onclick=\"go('done')\">Enter dashboard <span class='cap'><svg width='12' height='12' viewBox='0 0 12 12' fill='none' stroke='#fff' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M1.5 6h9M7 2.5 10.5 6 7 9.5'/></svg></span></button>";
+          requestAnimationFrame(()=>tcta.querySelector(".btn").classList.add("show"));
+          running = false;
+        }, 700);
+      }
+    }, REDUCED ? 0 : 620*(i+1));
+  });
+};
+/* ===== WebGL2 caustic atmosphere behind the aperture — ported from the original
+   ARGUS deployer. Reads AP / mx / my / __shutterSnap / __shutterPulse (shared from
+   the engine above). HARD FALLBACK: no WebGL2 / shader compile fail / reduced-motion
+   -> it returns and the Canvas2D aperture carries the hero. It CANNOT blank the page. */
+(function atmosphere(){
+  const acv = document.getElementById('atmosphere');
+  if (REDUCED || !acv) return;
+  let gl;
+  try { gl = acv.getContext('webgl2', { antialias:false, alpha:true }); } catch(e){}
+  if (!gl) return;
+  const VERT = `#version 300 es
+  const vec2 P[3] = vec2[3](vec2(-1.,-1.), vec2(3.,-1.), vec2(-1.,3.));
+  void main(){ gl_Position = vec4(P[gl_VertexID], 0., 1.); }`;
+  const FRAG = `#version 300 es
+  precision highp float;
+  uniform vec2 uRes; uniform float uTime; uniform float uAperture;
+  uniform float uLockPulse; uniform vec2 uMouse; uniform vec2 uCenter; uniform float uRingR;
+  out vec4 o;
+  vec3 permute(vec3 x){ return mod(((x*34.0)+1.0)*x, 289.0); }
+  float snoise(vec2 v){
+    const vec4 C=vec4(0.211324865,0.366025404,-0.577350269,0.024390243);
+    vec2 i=floor(v+dot(v,C.yy)); vec2 x0=v-i+dot(i,C.xx);
+    vec2 i1=(x0.x>x0.y)?vec2(1.,0.):vec2(0.,1.);
+    vec4 x12=x0.xyxy+C.xxzz; x12.xy-=i1;
+    i=mod(i,289.0);
+    vec3 p=permute(permute(i.y+vec3(0.,i1.y,1.))+i.x+vec3(0.,i1.x,1.));
+    vec3 m=max(0.5-vec3(dot(x0,x0),dot(x12.xy,x12.xy),dot(x12.zw,x12.zw)),0.0);
+    m=m*m; m=m*m;
+    vec3 x=2.0*fract(p*C.www)-1.0; vec3 h=abs(x)-0.5; vec3 ox=floor(x+0.5); vec3 a0=x-ox;
+    m*=1.79284291-0.85373472*(a0*a0+h*h);
+    vec3 g; g.x=a0.x*x0.x+h.x*x0.y; g.yz=a0.yz*x12.xz+h.yz*x12.yw;
+    return 130.0*dot(m,g);
+  }
+  float n2(vec2 p){ return 0.5+0.5*snoise(p); }
+  vec2 curl(vec2 p){ float e=0.01;
+    float dx=n2(p+vec2(e,0.))-n2(p-vec2(e,0.));
+    float dy=n2(p+vec2(0.,e))-n2(p-vec2(0.,e));
+    return vec2(dy,-dx)/(2.*e); }
+  float caustic(vec2 uv,float t){ float s=0.;
+    s+=pow(n2(uv*3.0+vec2(t*0.08,-t*0.05)),6.0);
+    s+=pow(n2(uv*6.0-vec2(t*0.05,t*0.09)),8.0)*0.6;
+    s+=pow(n2(uv*1.5+t*0.03),4.0)*0.4;
+    return s; }
+  void main(){
+    vec2 uv=(gl_FragCoord.xy - uCenter*uRes)/uRes.y;
+    uv+=uMouse*0.03;
+    float r=length(uv);
+    float c=caustic(uv,uTime)*mix(0.12,1.0,smoothstep(1.0,0.0,r))*uAperture;
+    vec2 flow=curl(uv*2.0+uTime*0.05);
+    float streak=smoothstep(0.6,1.0,abs(sin(dot(flow,uv)*8.0+uTime)))*smoothstep(1.2,0.2,r);
+    float ring=smoothstep(0.02,0.0,abs(r-uRingR))*uLockPulse;
+    vec3 col=vec3(0.04,0.42,0.95);
+    col=mix(col, vec3(0.55,0.30,0.85), streak*0.5);
+    col=mix(col, vec3(0.02,0.30,0.85), ring);
+    float a=clamp(c*0.55+streak*0.18+ring*0.85, 0.0, 0.75)*uAperture;
+    o=vec4(col, a);
+  }`;
+  function sh(type, src){
+    const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)){ console.warn(gl.getShaderInfoLog(s)); return null; }
+    return s;
+  }
+  const vs = sh(gl.VERTEX_SHADER, VERT), fs = sh(gl.FRAGMENT_SHADER, FRAG);
+  if (!vs || !fs) return;
+  const prog = gl.createProgram();
+  gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)){ console.warn(gl.getProgramInfoLog(prog)); return; }
+  gl.useProgram(prog);
+  const U = n => gl.getUniformLocation(prog, n);
+  const uRes=U('uRes'), uTime=U('uTime'), uAperture=U('uAperture'),
+        uLockPulse=U('uLockPulse'), uMouse=U('uMouse'), uCenter=U('uCenter'), uRingR=U('uRingR');
+  const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
+  gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  const ADPR = Math.min(devicePixelRatio || 1, 1.5);
+  function aresize(){
+    acv.width = Math.floor(innerWidth*ADPR); acv.height = Math.floor(innerHeight*ADPR);
+    acv.style.width = innerWidth+'px'; acv.style.height = innerHeight+'px';
+    gl.viewport(0,0,acv.width,acv.height);
+  }
+  aresize(); addEventListener('resize', aresize);
+  const at0 = performance.now();
+  function aframe(){
+    gl.uniform2f(uRes, acv.width, acv.height);
+    gl.uniform1f(uTime, (performance.now()-at0)/1000);
+    const snap = window.__shutterSnap ?? 1;
+    gl.uniform1f(uAperture, Math.max(0, AP.alpha) * (0.35 + 0.65*AP.open*snap));
+    gl.uniform1f(uLockPulse, window.__shutterPulse || 0);
+    gl.uniform2f(uMouse, mx, my);
+    gl.uniform2f(uCenter, AP.x, 1 - AP.y);
+    gl.uniform1f(uRingR, AP.r / innerHeight);
+    gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
+    if (AP.alpha > 0.01) gl.drawArrays(gl.TRIANGLES, 0, 3);
+    requestAnimationFrame(aframe);
+  }
+  requestAnimationFrame(aframe);
+})();
+})();
+</script>
+</body>
+</html>

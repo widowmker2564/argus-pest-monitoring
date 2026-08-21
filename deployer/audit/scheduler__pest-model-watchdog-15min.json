@@ -1,0 +1,23 @@
+{
+    "ActionAfterCompletion": "NONE",
+    "Arn": "arn:aws:scheduler:us-east-1:366356442579:schedule/default/pest-model-watchdog-15min",
+    "Description": "",
+    "FlexibleTimeWindow": {
+        "Mode": "OFF"
+    },
+    "GroupName": "default",
+    "Name": "pest-model-watchdog-15min",
+    "ScheduleExpression": "rate(15 minutes)",
+    "ScheduleExpressionTimezone": "Asia/Singapore",
+    "State": "ENABLED",
+    "Target": {
+        "Arn": "arn:aws:lambda:us-east-1:366356442579:function:pest-model-watchdog",
+        "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 86400,
+            "MaximumRetryAttempts": 0
+        },
+        "RoleArn": "arn:aws:iam::366356442579:role/service-role/Amazon_EventBridge_Scheduler_LAMBDA_d585792c00"
+    },
+    "_classification": "PROD",
+    "_note": "Cost guard. Invokes pest-model-watchdog every 15 min to auto-stop the Rekognition Custom Labels model if left running. No target Input. FlexibleTimeWindow OFF. Timezone Asia/Singapore (irrelevant for rate(), but preserve for fidelity). MaximumRetryAttempts=0 (distinct from the 185 on the Gen-1 schedules)."
+}

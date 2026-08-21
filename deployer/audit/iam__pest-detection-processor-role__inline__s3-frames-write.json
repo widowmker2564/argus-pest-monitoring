@@ -1,0 +1,13 @@
+{
+ "Version": "2012-10-17",
+ "Statement": [
+  {
+   "Sid": "WriteBackExifNormalisedFrames",
+   "Effect": "Allow",
+   "Action": [
+    "s3:PutObject"
+   ],
+   "Resource": "arn:aws:s3:::frames-armyworm-366356442579/frames/*"
+  }
+ ]
+}

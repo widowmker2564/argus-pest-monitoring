@@ -1,0 +1,18 @@
+{
+    "Items": [
+        {
+            "AuthorizerId": "enxa26",
+            "AuthorizerType": "JWT",
+            "IdentitySource": [
+                "$request.header.Authorization"
+            ],
+            "JwtConfiguration": {
+                "Audience": [
+                    "4husu6afr835e235eu9dqp8av6"
+                ],
+                "Issuer": "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_ea0aJdusl"
+            },
+            "Name": "cognito-dashboard"
+        }
+    ]
+}

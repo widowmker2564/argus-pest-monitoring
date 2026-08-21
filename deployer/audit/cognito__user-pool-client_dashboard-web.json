@@ -1,0 +1,25 @@
+{
+    "UserPoolClient": {
+        "UserPoolId": "us-east-1_ea0aJdusl",
+        "ClientName": "dashboard-web",
+        "ClientId": "4husu6afr835e235eu9dqp8av6",
+        "LastModifiedDate": "2026-07-06T13:37:15.799000+08:00",
+        "CreationDate": "2026-07-06T13:37:15.799000+08:00",
+        "RefreshTokenValidity": 30,
+        "AccessTokenValidity": 12,
+        "IdTokenValidity": 12,
+        "TokenValidityUnits": {
+            "AccessToken": "hours",
+            "IdToken": "hours",
+            "RefreshToken": "days"
+        },
+        "ExplicitAuthFlows": [
+            "ALLOW_REFRESH_TOKEN_AUTH",
+            "ALLOW_USER_PASSWORD_AUTH"
+        ],
+        "AllowedOAuthFlowsUserPoolClient": false,
+        "EnableTokenRevocation": true,
+        "EnablePropagateAdditionalUserContextData": false,
+        "AuthSessionValidity": 3
+    }
+}

@@ -1,0 +1,8 @@
+# Never ship these with the folder: customer browser profile + deploy state
+webview_profile/
+out/
+# Build artifacts
+dist/
+build/
+__pycache__/
+*.spec

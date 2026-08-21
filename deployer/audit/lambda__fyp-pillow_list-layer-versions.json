@@ -1,0 +1,27 @@
+{
+  "LayerName": "fyp-pillow",
+  "LayerArn": "arn:aws:lambda:us-east-1:366356442579:layer:fyp-pillow",
+  "LayerVersions": [
+    {
+      "LayerVersionArn": "arn:aws:lambda:us-east-1:366356442579:layer:fyp-pillow:2",
+      "Version": 2,
+      "Description": "",
+      "CreatedDate": "2026-05-28T03:57:54.587+0000",
+      "CompatibleRuntimes": ["python3.12"],
+      "CompatibleArchitectures": ["x86_64"],
+      "CodeSize": 7888247,
+      "CodeSha256": "pbTTMOLxeIFwXFlyRW9z9Aa2PyUWgPqehyvDbuxRM+o=",
+      "_note": "This is the version wired onto pest-detection-processor (fyp-pillow:2). Source .zip is NOT stored in any S3 bucket; published directly from a local upload."
+    },
+    {
+      "LayerVersionArn": "arn:aws:lambda:us-east-1:366356442579:layer:fyp-pillow:1",
+      "Version": 1,
+      "Description": "Self-built Pillow for pest-detection-processor",
+      "CreatedDate": "2026-05-21T06:56:24.051+0000",
+      "CompatibleRuntimes": ["python3.12"],
+      "CompatibleArchitectures": ["x86_64"],
+      "CodeSize": 7551198,
+      "CodeSha256": "dWdQx7kMwsLfgT4R/IKJnPduBwlQKSJ0BaSMBevrJbA="
+    }
+  ]
+}

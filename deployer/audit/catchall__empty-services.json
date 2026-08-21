@@ -1,0 +1,17 @@
+{
+  "_note": "Catch-all auditor: services swept that contain NO pest-related resources. deploy.py does not need to touch any of these for the pest system. Recorded so the picture is complete and future audits don't re-sweep blind.",
+  "region": "us-east-1",
+  "account": "366356442579",
+  "empty_or_not_applicable": {
+    "SecretsManager_list-secrets": "EMPTY (no secrets at all)",
+    "SSM_ParameterStore_describe-parameters": "EMPTY (no parameters)",
+    "Amplify_list-apps": "EMPTY in us-east-1 (the 'spf*' Amplify chatbot mentioned in the shared-account warning is NOT in this region; if it exists it is in another region and is NOT_PEST regardless)",
+    "WAFv2_REGIONAL": "EMPTY",
+    "WAFv2_CLOUDFRONT": "EMPTY (dashboard CloudFront has no WAF)",
+    "ACM_list-certificates": "EMPTY (no custom TLS cert; dashboard uses default *.cloudfront.net cert)",
+    "Route53_list-hosted-zones": "EMPTY (no custom domain for the dashboard)",
+    "SNS_list-topics": "EMPTY (no notification topics)",
+    "EventBridge_events_list-rules": "EMPTY (all scheduling is via EventBridge Scheduler, see scheduler file)",
+    "CloudWatch_describe-alarms": "EMPTY (no alarms, no composite alarms)"
+  }
+}

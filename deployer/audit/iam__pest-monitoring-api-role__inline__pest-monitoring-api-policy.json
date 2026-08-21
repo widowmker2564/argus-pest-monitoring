@@ -1,0 +1,103 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "S3ReadWrite",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::frames-armyworm-366356442579",
+        "arn:aws:s3:::frames-armyworm-366356442579/*",
+        "arn:aws:s3:::processed-images-armyworm-366356442579",
+        "arn:aws:s3:::processed-images-armyworm-366356442579/*"
+      ]
+    },
+    {
+      "Sid": "S3DeleteCapturesOnly",
+      "Effect": "Allow",
+      "Action": "s3:DeleteObject",
+      "Resource": [
+        "arn:aws:s3:::frames-armyworm-366356442579/frames/*",
+        "arn:aws:s3:::processed-images-armyworm-366356442579/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": "dynamodb:*",
+      "Resource": [
+        "arn:aws:dynamodb:us-east-1:366356442579:table/pest-monitoring-cameras",
+        "arn:aws:dynamodb:us-east-1:366356442579:table/pest-monitoring-detections",
+        "arn:aws:dynamodb:us-east-1:366356442579:table/pest-monitoring-detections/index/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "rekognition:DescribeProjects",
+        "rekognition:DescribeProjectVersions",
+        "rekognition:StartProjectVersion",
+        "rekognition:StopProjectVersion"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "scheduler:CreateSchedule",
+        "scheduler:UpdateSchedule",
+        "scheduler:DeleteSchedule",
+        "scheduler:GetSchedule",
+        "scheduler:ListSchedules"
+      ],
+      "Resource": "arn:aws:scheduler:us-east-1:366356442579:schedule/default/pest-camera-*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "events:PutRule",
+        "events:DeleteRule",
+        "events:PutTargets",
+        "events:RemoveTargets",
+        "events:ListTargetsByRule",
+        "events:DescribeRule"
+      ],
+      "Resource": "arn:aws:events:us-east-1:366356442579:rule/pest-sched-*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "lambda:AddPermission",
+        "lambda:RemovePermission",
+        "lambda:InvokeFunction"
+      ],
+      "Resource": [
+        "arn:aws:lambda:us-east-1:366356442579:function:pest-camera-scheduler",
+        "arn:aws:lambda:us-east-1:366356442579:function:kvs-hls-url-generator"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": "arn:aws:iam::366356442579:role/pest-scheduler-invocation-role",
+      "Condition": {
+        "StringEquals": {
+          "iam:PassedToService": "scheduler.amazonaws.com"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "kinesisvideo:DescribeStream",
+        "kinesisvideo:ListStreams",
+        "kinesisvideo:GetDataEndpoint",
+        "kinesisvideo:GetHLSStreamingSessionURL"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "note": "NOT a deployable resource. Documents runtime-created EventBridge Rules so deploy.py grants the RIGHT IAM to pest-monitoring-api-role and does NOT try to pre-create these.",
+  "created_by": "pest-monitoring-api (/schedule route, _put_scheduled_rule)",
+  "rule_name_pattern": "pest-sched-{camera_id}-{action}",
+  "action_values": ["start", "stop"],
+  "schedule_expression": "cron({mm} {hh} ? * {DAYS} *)  (UTC; DAYS is comma list MON..SUN or MON-SUN)",
+  "target": {
+    "Id": "1",
+    "Arn": "SCHEDULE_EXECUTOR_ARN = arn:aws:lambda:...:function:pest-camera-scheduler",
+    "Input": "{\"camera_id\":..., \"action\":..., \"schedule_id\":<uuid>, \"trigger_time\":\"HH:MM\"}"
+  },
+  "per_rule_permission": {
+    "FunctionName": "pest-camera-scheduler",
+    "StatementId": "sched-invoke-<rule_name>",
+    "Action": "lambda:InvokeFunction",
+    "Principal": "events.amazonaws.com",
+    "SourceArn": "arn:aws:events:{region}:{account_id}:rule/<rule_name>"
+  },
+  "iam_pest_monitoring_api_role_must_allow": [
+    "events:PutRule", "events:PutTargets", "events:DeleteRule", "events:RemoveTargets",
+    "lambda:AddPermission", "lambda:RemovePermission", "lambda:InvokeFunction (on pest-camera-scheduler)"
+  ]
+}

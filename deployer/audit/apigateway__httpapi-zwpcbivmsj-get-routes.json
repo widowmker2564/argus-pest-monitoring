@@ -1,0 +1,171 @@
+{
+    "Items": [
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "JWT",
+            "AuthorizerId": "enxa26",
+            "RouteId": "1xu5zhs",
+            "RouteKey": "GET /cost",
+            "Target": "integrations/t7ggvzn"
+        },
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "JWT",
+            "AuthorizerId": "enxa26",
+            "RouteId": "1zwy2vl",
+            "RouteKey": "DELETE /identities",
+            "Target": "integrations/t7ggvzn"
+        },
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "JWT",
+            "AuthorizerId": "enxa26",
+            "RouteId": "2dlsspt",
+            "RouteKey": "DELETE /schedule",
+            "Target": "integrations/t7ggvzn"
+        },
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "JWT",
+            "AuthorizerId": "enxa26",
+            "RouteId": "33iv13c",
+            "RouteKey": "POST /stream/start",
+            "Target": "integrations/t7ggvzn"
+        },
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "JWT",
+            "AuthorizerId": "enxa26",
+            "RouteId": "58gsnz6",
+            "RouteKey": "GET /presigned-url",
+            "Target": "integrations/t7ggvzn"
+        },
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "JWT",
+            "AuthorizerId": "enxa26",
+            "RouteId": "7wgkuzm",
+            "RouteKey": "POST /detection/verify",
+            "Target": "integrations/t7ggvzn"
+        },
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "JWT",
+            "AuthorizerId": "enxa26",
+            "RouteId": "ao22ksu",
+            "RouteKey": "GET /video-playback",
+            "Target": "integrations/33f69kt"
+        },
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "JWT",
+            "AuthorizerId": "enxa26",
+            "RouteId": "b3kl8si",
+            "RouteKey": "GET /settings",
+            "Target": "integrations/t7ggvzn"
+        },
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "NONE",
+            "RouteId": "gcc7355",
+            "RouteKey": "GET /stream/status",
+            "Target": "integrations/t7ggvzn"
+        },
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "JWT",
+            "AuthorizerId": "enxa26",
+            "RouteId": "glwyqo0",
+            "RouteKey": "DELETE /detection",
+            "Target": "integrations/t7ggvzn"
+        },
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "JWT",
+            "AuthorizerId": "enxa26",
+            "RouteId": "i8pcllp",
+            "RouteKey": "POST /stream/stop",
+            "Target": "integrations/t7ggvzn"
+        },
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "JWT",
+            "AuthorizerId": "enxa26",
+            "RouteId": "jedpy5t",
+            "RouteKey": "POST /settings",
+            "Target": "integrations/t7ggvzn"
+        },
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "JWT",
+            "AuthorizerId": "enxa26",
+            "RouteId": "krzufjf",
+            "RouteKey": "POST /model/stop",
+            "Target": "integrations/t7ggvzn"
+        },
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "JWT",
+            "AuthorizerId": "enxa26",
+            "RouteId": "nqy131o",
+            "RouteKey": "GET /identities",
+            "Target": "integrations/t7ggvzn"
+        },
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "JWT",
+            "AuthorizerId": "enxa26",
+            "RouteId": "odwxz00",
+            "RouteKey": "GET /schedule-logs",
+            "Target": "integrations/t7ggvzn"
+        },
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "JWT",
+            "AuthorizerId": "enxa26",
+            "RouteId": "t4w6czh",
+            "RouteKey": "POST /model/start",
+            "Target": "integrations/t7ggvzn"
+        },
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "JWT",
+            "AuthorizerId": "enxa26",
+            "RouteId": "tos63cu",
+            "RouteKey": "POST /schedule",
+            "Target": "integrations/t7ggvzn"
+        },
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "JWT",
+            "AuthorizerId": "enxa26",
+            "RouteId": "ttif38k",
+            "RouteKey": "GET /history",
+            "Target": "integrations/t7ggvzn"
+        },
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "JWT",
+            "AuthorizerId": "enxa26",
+            "RouteId": "w0ivphi",
+            "RouteKey": "POST /identities",
+            "Target": "integrations/t7ggvzn"
+        },
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "JWT",
+            "AuthorizerId": "enxa26",
+            "RouteId": "wqh3mvj",
+            "RouteKey": "GET /schedule",
+            "Target": "integrations/t7ggvzn"
+        },
+        {
+            "ApiKeyRequired": false,
+            "AuthorizationType": "JWT",
+            "AuthorizerId": "enxa26",
+            "RouteId": "zbh9lli",
+            "RouteKey": "GET /model/status",
+            "Target": "integrations/t7ggvzn"
+        }
+    ]
+}

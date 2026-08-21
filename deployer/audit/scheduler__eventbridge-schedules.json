@@ -1,0 +1,58 @@
+{
+  "_note": "EventBridge Scheduler (aws scheduler) — group 'default'. Only pest-model-watchdog-15min is Gen-2 PROD. The model-start/stop + frame-extraction schedules target Gen-1 legacy Lambdas (pest-model-control, Extraction) and are DEAD but still ENABLED (still firing daily = wasted spend; flag for cleanup, do NOT recreate). pest-camera-scheduler Lambda has NO schedule here and NO EventBridge rule — it is invoked by another path (API/dashboard); resolving that is the Lambda auditor's scope. RoleArn is a per-account service-role auto-created by the console; deploy.py must create its own execution role for the scheduler->lambda invoke and NOT reuse this ARN.",
+  "region": "us-east-1",
+  "account": "366356442579",
+  "group": "default",
+  "eventbridge_rules_events": "NONE (aws events list-rules empty)",
+  "schedules": [
+    {
+      "Name": "pest-model-watchdog-15min",
+      "classification": "PROD",
+      "State": "ENABLED",
+      "ScheduleExpression": "rate(15 minutes)",
+      "ScheduleExpressionTimezone": "Asia/Singapore",
+      "FlexibleTimeWindow": { "Mode": "OFF" },
+      "ActionAfterCompletion": "NONE",
+      "Target": {
+        "Arn": "arn:aws:lambda:us-east-1:366356442579:function:pest-model-watchdog",
+        "Input": "none",
+        "RetryPolicy": { "MaximumEventAgeInSeconds": 86400, "MaximumRetryAttempts": 0 },
+        "RoleArn": "arn:aws:iam::366356442579:role/service-role/Amazon_EventBridge_Scheduler_LAMBDA_d585792c00 (per-account service-role; recreate a fresh one)"
+      }
+    },
+    {
+      "Name": "model-start-schedule",
+      "classification": "DEAD",
+      "reason": "targets Gen-1 pest-model-control",
+      "State": "ENABLED",
+      "ScheduleExpression": "cron(53 5 ? * MON,TUE,WED,THU,FRI,SAT,SUN *)",
+      "ScheduleExpressionTimezone": "Asia/Singapore",
+      "Target": { "Arn": "arn:aws:lambda:us-east-1:366356442579:function:pest-model-control", "Input": "{\"action\": \"start\"}" }
+    },
+    {
+      "Name": "model-stop-schedule",
+      "classification": "DEAD",
+      "reason": "targets Gen-1 pest-model-control",
+      "State": "ENABLED",
+      "ScheduleExpression": "cron(1 6 ? * MON,TUE,WED,THU,FRI,SAT,SUN *)",
+      "ScheduleExpressionTimezone": "Asia/Singapore",
+      "Target": { "Arn": "arn:aws:lambda:us-east-1:366356442579:function:pest-model-control", "Input": "{\"action\": \"stop\"}" }
+    },
+    {
+      "Name": "frame-extraction-schedule",
+      "classification": "DEAD",
+      "reason": "targets Gen-1 Extraction Lambda",
+      "State": "ENABLED",
+      "ScheduleExpression": "cron(0 6 ? * MON,TUE,WED,THU,FRI,SAT,SUN *)",
+      "ScheduleExpressionTimezone": "Asia/Singapore",
+      "Target": { "Arn": "arn:aws:lambda:us-east-1:366356442579:function:Extraction", "Input": "{\"action\": \"start\", \"rate_value\": 30, \"rate_unit\": \"minutes\", \"schedule_config\": {\"enabled\": true, \"start_time\": \"06:00\", \"end_time\": \"06:01\", \"days\": [\"Mon\",\"Tue\",\"Wed\",\"Thu\",\"Fri\",\"Sat\",\"Sun\"]}}" }
+    },
+    {
+      "Name": "ExtractFrameEveryMinute",
+      "classification": "DEAD",
+      "reason": "targets Gen-1 Extraction Lambda; already DISABLED",
+      "State": "DISABLED",
+      "Target": { "Arn": "arn:aws:lambda:us-east-1:366356442579:function:Extraction" }
+    }
+  ]
+}

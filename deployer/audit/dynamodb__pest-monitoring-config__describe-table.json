@@ -1,0 +1,41 @@
+{
+    "Table": {
+        "AttributeDefinitions": [
+            {
+                "AttributeName": "config_id",
+                "AttributeType": "S"
+            }
+        ],
+        "TableName": "pest-monitoring-config",
+        "KeySchema": [
+            {
+                "AttributeName": "config_id",
+                "KeyType": "HASH"
+            }
+        ],
+        "TableStatus": "ACTIVE",
+        "CreationDateTime": "2026-02-15T22:46:21.700000+08:00",
+        "ProvisionedThroughput": {
+            "NumberOfDecreasesToday": 0,
+            "ReadCapacityUnits": 0,
+            "WriteCapacityUnits": 0
+        },
+        "TableSizeBytes": 336,
+        "ItemCount": 2,
+        "TableArn": "arn:aws:dynamodb:us-east-1:366356442579:table/pest-monitoring-config",
+        "TableId": "5d38f664-4034-4c85-8e3c-31c36d4ce7b1",
+        "BillingModeSummary": {
+            "BillingMode": "PAY_PER_REQUEST",
+            "LastUpdateToPayPerRequestDateTime": "2026-02-15T22:46:21.700000+08:00"
+        },
+        "TableClassSummary": {
+            "TableClass": "STANDARD"
+        },
+        "DeletionProtectionEnabled": false,
+        "WarmThroughput": {
+            "ReadUnitsPerSecond": 12000,
+            "WriteUnitsPerSecond": 4000,
+            "Status": "ACTIVE"
+        }
+    }
+}

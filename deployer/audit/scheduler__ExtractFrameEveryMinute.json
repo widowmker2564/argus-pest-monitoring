@@ -1,0 +1,23 @@
+{
+    "ActionAfterCompletion": "NONE",
+    "Arn": "arn:aws:scheduler:us-east-1:366356442579:schedule/default/ExtractFrameEveryMinute",
+    "Description": "Extract frames every 30 minutes",
+    "FlexibleTimeWindow": {
+        "Mode": "OFF"
+    },
+    "GroupName": "default",
+    "Name": "ExtractFrameEveryMinute",
+    "ScheduleExpression": "rate(30 minutes)",
+    "ScheduleExpressionTimezone": "Asia/Singapore",
+    "State": "DISABLED",
+    "Target": {
+        "Arn": "arn:aws:lambda:us-east-1:366356442579:function:Extraction",
+        "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 86400,
+            "MaximumRetryAttempts": 185
+        },
+        "RoleArn": "arn:aws:iam::366356442579:role/service-role/Amazon_EventBridge_Scheduler_LAMBDA_4c3f0b5d17"
+    },
+    "_classification": "DEAD",
+    "_note": "GEN-1 legacy, already DISABLED. Superseded by frame-extraction-schedule (cron). Named 'EveryMinute' but is actually rate(30 minutes). No target Input. Do NOT recreate."
+}

@@ -1,0 +1,172 @@
+{
+    "ProjectVersionDescriptions": [
+        {
+            "ProjectVersionArn": "arn:aws:rekognition:us-east-1:366356442579:project/armyworm-detection/version/v5-2026-07-07/1783394123547",
+            "CreationTimestamp": "2026-07-07T11:15:23.547000+08:00",
+            "Status": "STOPPED",
+            "StatusMessage": "The model is ready for hosting.",
+            "BillableTrainingTimeInSeconds": 12726,
+            "TrainingEndTimestamp": "2026-07-07T12:56:19.463000+08:00",
+            "OutputConfig": {
+                "S3Bucket": "frames-armyworm-366356442579",
+                "S3KeyPrefix": "training-output/v5"
+            },
+            "TrainingDataResult": {
+                "Input": {},
+                "Output": {
+                    "Assets": [
+                        {
+                            "GroundTruthManifest": {
+                                "S3Object": {
+                                    "Bucket": "frames-armyworm-366356442579",
+                                    "Name": "training-output/v5/TrainingGroundTruth-armyworm-detection-v5-2026-07-07.json"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "Validation": {
+                    "Assets": [
+                        {
+                            "GroundTruthManifest": {
+                                "S3Object": {
+                                    "Bucket": "frames-armyworm-366356442579",
+                                    "Name": "training-output/v5/TrainingManifestWithValidation-armyworm-detection-v5-2026-07-07.json"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "TestingDataResult": {
+                "Input": {
+                    "AutoCreate": false
+                },
+                "Output": {
+                    "Assets": [
+                        {
+                            "GroundTruthManifest": {
+                                "S3Object": {
+                                    "Bucket": "frames-armyworm-366356442579",
+                                    "Name": "training-output/v5/TestingGroundTruth-armyworm-detection-v5-2026-07-07.json"
+                                }
+                            }
+                        }
+                    ],
+                    "AutoCreate": false
+                },
+                "Validation": {
+                    "Assets": [
+                        {
+                            "GroundTruthManifest": {
+                                "S3Object": {
+                                    "Bucket": "frames-armyworm-366356442579",
+                                    "Name": "training-output/v5/TestingManifestWithValidation-armyworm-detection-v5-2026-07-07.json"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "EvaluationResult": {
+                "F1Score": 0.8517482280731201,
+                "Summary": {
+                    "S3Object": {
+                        "Bucket": "frames-armyworm-366356442579",
+                        "Name": "training-output/v5/EvaluationResultSummary-armyworm-detection-v5-2026-07-07.json"
+                    }
+                }
+            },
+            "ManifestSummary": {
+                "S3Object": {
+                    "Bucket": "frames-armyworm-366356442579",
+                    "Name": "training-output/v5/ManifestSummary-armyworm-detection-v5-2026-07-07.json"
+                }
+            }
+        },
+        {
+            "ProjectVersionArn": "arn:aws:rekognition:us-east-1:366356442579:project/armyworm-detection/version/armyworm-detection.2026-05-21T12.46.19/1779338780450",
+            "CreationTimestamp": "2026-05-21T12:46:20.450000+08:00",
+            "Status": "STOPPED",
+            "StatusMessage": "The model is ready for hosting.",
+            "BillableTrainingTimeInSeconds": 4469,
+            "TrainingEndTimestamp": "2026-05-21T13:31:46.133000+08:00",
+            "OutputConfig": {
+                "S3Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                "S3KeyPrefix": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/armyworm-detection/1779334594920"
+            },
+            "TrainingDataResult": {
+                "Input": {},
+                "Output": {
+                    "Assets": [
+                        {
+                            "GroundTruthManifest": {
+                                "S3Object": {
+                                    "Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                                    "Name": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/armyworm-detection/1779334594920/TrainingGroundTruth-armyworm-detection-armyworm-detection.2026-05-21T12.46.19.json"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "Validation": {
+                    "Assets": [
+                        {
+                            "GroundTruthManifest": {
+                                "S3Object": {
+                                    "Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                                    "Name": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/armyworm-detection/1779334594920/TrainingManifestWithValidation-armyworm-detection-armyworm-detection.2026-05-21T12.46.19.json"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "TestingDataResult": {
+                "Input": {
+                    "AutoCreate": false
+                },
+                "Output": {
+                    "Assets": [
+                        {
+                            "GroundTruthManifest": {
+                                "S3Object": {
+                                    "Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                                    "Name": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/armyworm-detection/1779334594920/TestingGroundTruth-armyworm-detection-armyworm-detection.2026-05-21T12.46.19.json"
+                                }
+                            }
+                        }
+                    ],
+                    "AutoCreate": false
+                },
+                "Validation": {
+                    "Assets": [
+                        {
+                            "GroundTruthManifest": {
+                                "S3Object": {
+                                    "Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                                    "Name": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/armyworm-detection/1779334594920/TestingManifestWithValidation-armyworm-detection-armyworm-detection.2026-05-21T12.46.19.json"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "EvaluationResult": {
+                "F1Score": 0.7194526195526123,
+                "Summary": {
+                    "S3Object": {
+                        "Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                        "Name": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/armyworm-detection/1779334594920/EvaluationResultSummary-armyworm-detection-armyworm-detection.2026-05-21T12.46.19.json"
+                    }
+                }
+            },
+            "ManifestSummary": {
+                "S3Object": {
+                    "Bucket": "custom-labels-console-us-east-1-d1abc2aed2",
+                    "Name": "evaluation/arn:aws:rekognition:us-east-1:366356442579:project/armyworm-detection/1779334594920/ManifestSummary-armyworm-detection-armyworm-detection.2026-05-21T12.46.19.json"
+                }
+            }
+        }
+    ]
+}

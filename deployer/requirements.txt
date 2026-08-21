@@ -1,0 +1,13 @@
+# ARGUS desktop deployer — runtime dependencies
+boto3>=1.34            # AWS SDK (deploy.py)
+pywebview>=5.0         # desktop shell; uses Edge WebView2 on Windows
+keyring>=25.0          # encrypted credential storage (Windows Credential Manager)
+Pillow>=10.0           # training.py: image dims + the 4096px downscale
+
+# Windows note: pywebview's edgechromium backend needs the Microsoft Edge WebView2
+# Runtime. It is preinstalled on Windows 11 and current Windows 10; the installer
+# (or the .exe) should verify it and, if missing, point the user to the Evergreen
+# Bootstrapper. pywebview pulls pythonnet + clr-loader on Windows automatically.
+
+# Build-time only (not shipped):
+#   pyinstaller>=6.0

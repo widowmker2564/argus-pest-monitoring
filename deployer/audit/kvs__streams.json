@@ -1,0 +1,43 @@
+{
+  "_note": "Kinesis Video Streams — catch-all auditor. Stream names embed no account id. armyworm-cam-stream + moth-cam-stream are the live Gen-2 camera ingest streams (PROD/DEMO). FYP-PROJECT is Wilbur Gen-1 legacy (DEAD). MMS default AWS KMS key alias/aws/kinesisvideo is used everywhere (no CMK to recreate). Data endpoints are per-account/per-stream and resolved at runtime via get-data-endpoint; do NOT hardcode them in deploy.py.",
+  "region": "us-east-1",
+  "account": "366356442579",
+  "streams": [
+    {
+      "StreamName": "armyworm-cam-stream",
+      "classification": "PROD",
+      "StreamARN": "arn:aws:kinesisvideo:us-east-1:366356442579:stream/armyworm-cam-stream/1779436101323",
+      "KmsKeyId": "arn:aws:kms:us-east-1:366356442579:alias/aws/kinesisvideo",
+      "DataRetentionInHours": 2,
+      "MediaType": "not-set (default)",
+      "Status": "ACTIVE",
+      "CreationTime": "2026-05-22T15:48:21.323000+08:00",
+      "Tags": {},
+      "hls_data_endpoint_runtime": "https://b-fd02c7db.kinesisvideo.us-east-1.amazonaws.com (per-account, resolve at runtime, do not hardcode)"
+    },
+    {
+      "StreamName": "moth-cam-stream",
+      "classification": "PROD",
+      "StreamARN": "arn:aws:kinesisvideo:us-east-1:366356442579:stream/moth-cam-stream/1782715404439",
+      "KmsKeyId": "arn:aws:kms:us-east-1:366356442579:alias/aws/kinesisvideo",
+      "DataRetentionInHours": 2,
+      "MediaType": "not-set (default)",
+      "Status": "ACTIVE",
+      "CreationTime": "2026-06-29T14:43:24.439000+08:00",
+      "Tags": {},
+      "hls_data_endpoint_runtime": "https://b-ba4a413e.kinesisvideo.us-east-1.amazonaws.com (per-account, resolve at runtime, do not hardcode)"
+    },
+    {
+      "StreamName": "FYP-PROJECT",
+      "classification": "DEAD",
+      "reason": "Wilbur Gen-1 legacy stream, 168h retention, not wired to Gen-2 live-view",
+      "StreamARN": "arn:aws:kinesisvideo:us-east-1:366356442579:stream/FYP-PROJECT/1770217249832",
+      "KmsKeyId": "arn:aws:kms:us-east-1:366356442579:alias/aws/kinesisvideo",
+      "DataRetentionInHours": 168,
+      "Status": "ACTIVE",
+      "CreationTime": "2026-02-04T23:00:49.832000+08:00",
+      "Tags": {},
+      "hls_data_endpoint_runtime": "https://b-604520a7.kinesisvideo.us-east-1.amazonaws.com"
+    }
+  ]
+}

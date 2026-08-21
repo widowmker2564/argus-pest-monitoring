@@ -1,0 +1,24 @@
+{
+    "ActionAfterCompletion": "NONE",
+    "Arn": "arn:aws:scheduler:us-east-1:366356442579:schedule/default/frame-extraction-schedule",
+    "Description": "Frame extraction starting at 06:00",
+    "FlexibleTimeWindow": {
+        "Mode": "OFF"
+    },
+    "GroupName": "default",
+    "Name": "frame-extraction-schedule",
+    "ScheduleExpression": "cron(0 6 ? * MON,TUE,WED,THU,FRI,SAT,SUN *)",
+    "ScheduleExpressionTimezone": "Asia/Singapore",
+    "State": "ENABLED",
+    "Target": {
+        "Arn": "arn:aws:lambda:us-east-1:366356442579:function:Extraction",
+        "Input": "{\"action\": \"start\", \"rate_value\": 30, \"rate_unit\": \"minutes\", \"schedule_config\": {\"enabled\": true, \"start_time\": \"06:00\", \"end_time\": \"06:01\", \"days\": [\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\", \"Sat\", \"Sun\"]}}",
+        "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 86400,
+            "MaximumRetryAttempts": 185
+        },
+        "RoleArn": "arn:aws:iam::366356442579:role/service-role/Amazon_EventBridge_Scheduler_LAMBDA_4c3f0b5d17"
+    },
+    "_classification": "DEAD",
+    "_note": "GEN-1 daily auto-capture pipeline. Targets Gen-1 Lambda 'Extraction' with a rich Input payload (rate 30 min, start 06:00, end 06:01, all days). Fires 06:00 Asia/Singapore daily. Same pending product decision. If auto-capture kept, deploy.py rebuilds on Gen-2 pest-camera-scheduler with an equivalent payload."
+}

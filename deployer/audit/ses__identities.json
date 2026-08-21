@@ -1,0 +1,30 @@
+{
+  "_audit_note": "SES v1 list-identities + get-identity-verification-attributes for account 366356442579 / us-east-1, captured 2026-07-08. Only rex2956550768@gmail.com belongs to the pest system (it is BOTH the processor SENDER_EMAIL env var AND the system-config recipient_email). teowilbur@gmail.com = Wilbur (Gen-1 predecessor) legacy/DEAD. neobkee@gmail.com = unrelated identity, not referenced by the pest system.",
+  "PestIdentity": "rex2956550768@gmail.com",
+  "ListIdentities": [
+    "teowilbur@gmail.com",
+    "rex2956550768@gmail.com",
+    "neobkee@gmail.com"
+  ],
+  "VerificationAttributes": {
+    "rex2956550768@gmail.com": { "VerificationStatus": "Success" },
+    "teowilbur@gmail.com": { "VerificationStatus": "Success" },
+    "neobkee@gmail.com": { "VerificationStatus": "Success" }
+  },
+  "NotificationAttributes": {
+    "rex2956550768@gmail.com": {
+      "ForwardingEnabled": true,
+      "HeadersInBounceNotificationsEnabled": false,
+      "HeadersInComplaintNotificationsEnabled": false,
+      "HeadersInDeliveryNotificationsEnabled": false
+    },
+    "neobkee@gmail.com": {
+      "ForwardingEnabled": true,
+      "HeadersInBounceNotificationsEnabled": false,
+      "HeadersInComplaintNotificationsEnabled": false,
+      "HeadersInDeliveryNotificationsEnabled": false
+    }
+  },
+  "ConfigurationSets": [],
+  "IdentityType": "EMAIL_ADDRESS (all three are single email-address identities, NOT domain identities)"
+}

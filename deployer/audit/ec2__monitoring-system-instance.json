@@ -1,0 +1,18 @@
+{
+  "_note": "Found via Resource Groups Tagging API (only tagged resource outside the DDB/S3/Rekognition set the other auditors own). Running EC2 instance tagged Name=MonitoringSystem. Given the dashboard deploy plan is 'EC2 + nginx', this is almost certainly the dashboard web host. It is OUTSIDE the catch-all named service list but is pest-related and was not in any other auditor's explicit scope, so flagged here. deploy.py: the dashboard is currently served from S3 (pest-dashboard-366356442579) + CloudFront E1423RGLAXWNSI, so this EC2 host may be an ALTERNATE/older serving path. Confirm which is the shipping path before recreating. If recreated: t3.micro, needs a key pair (currently KeyName=CAG) and a security group. This is infra/demo, not a config object.",
+  "region": "us-east-1",
+  "account": "366356442579",
+  "classification": "UNKNOWN",
+  "instance": {
+    "InstanceId": "i-0750c917a1f038d4d",
+    "Name": "MonitoringSystem",
+    "State": "running",
+    "InstanceType": "t3.micro",
+    "PublicIp": "54.145.54.122",
+    "PrivateIp": "172.31.24.35",
+    "ImageId": "ami-0532be01f26a3de55",
+    "KeyName": "CAG",
+    "SecurityGroup": { "GroupId": "sg-03d98b3577152f2b6", "GroupName": "launch-wizard-2" },
+    "LaunchTime": "2026-02-09T03:17:27+00:00"
+  }
+}

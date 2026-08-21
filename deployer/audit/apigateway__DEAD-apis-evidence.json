@@ -1,0 +1,20 @@
+{
+    "_note": "Evidence that the two non-PROD API Gateway APIs are DEAD. deploy.py must NOT recreate these.",
+    "3go4jj1698": {
+        "expected_name": "PestDetectionAPI",
+        "protocol": "REST (apigateway v1)",
+        "status": "DEAD",
+        "evidence": "aws apigateway get-rest-api --rest-api-id 3go4jj1698 returns NotFoundException 'Invalid API identifier specified 366356442579:3go4jj1698'. The REST API no longer exists in the account. get-resources also returns NotFoundException. Nothing to recreate."
+    },
+    "j4v2m5cbte": {
+        "name": "PestMonitoringWebSocket",
+        "protocol": "WEBSOCKET",
+        "status": "DEAD",
+        "evidence": "API still exists but is a standalone WebSocket API disconnected from the live HTTP flow. Live dashboard uses HTTP API zwpcbivmsj + HLS live view (kvs-hls-handler), not WebSocket push. RouteSelectionExpression=$request.body.action.",
+        "routes": [
+            { "RouteKey": "$default", "RouteId": "td39xg0", "AuthorizationType": "NONE", "Target": "integrations/fktelx0" },
+            { "RouteKey": "$connect", "RouteId": "tgle5du", "AuthorizationType": "NONE", "Target": "integrations/y06pxhi" },
+            { "RouteKey": "$disconnect", "RouteId": "v0atjwi", "AuthorizationType": "NONE", "Target": "integrations/ksxw716" }
+        ]
+    }
+}

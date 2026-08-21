@@ -1,0 +1,43 @@
+{
+    "_note": "Lambda resource-based policies granting apigateway.amazonaws.com permission to invoke the two integration target functions for HTTP API zwpcbivmsj. Captured via 'aws lambda get-policy'. deploy.py must recreate these with 'aws lambda add-permission' after creating the integrations.",
+    "pest-monitoring-api": {
+        "Version": "2012-10-17",
+        "Id": "default",
+        "Statement": [
+            {
+                "Sid": "apigateway-invoke-zwpcbivmsj",
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": "apigateway.amazonaws.com"
+                },
+                "Action": "lambda:InvokeFunction",
+                "Resource": "arn:aws:lambda:us-east-1:366356442579:function:pest-monitoring-api",
+                "Condition": {
+                    "ArnLike": {
+                        "AWS:SourceArn": "arn:aws:execute-api:us-east-1:366356442579:zwpcbivmsj/*"
+                    }
+                }
+            }
+        ]
+    },
+    "kvs-hls-handler": {
+        "Version": "2012-10-17",
+        "Id": "default",
+        "Statement": [
+            {
+                "Sid": "41991c79-1758-5790-b8e9-445b26a9190a",
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": "apigateway.amazonaws.com"
+                },
+                "Action": "lambda:InvokeFunction",
+                "Resource": "arn:aws:lambda:us-east-1:366356442579:function:kvs-hls-handler",
+                "Condition": {
+                    "ArnLike": {
+                        "AWS:SourceArn": "arn:aws:execute-api:us-east-1:366356442579:zwpcbivmsj/*/*/video-playback"
+                    }
+                }
+            }
+        ]
+    }
+}

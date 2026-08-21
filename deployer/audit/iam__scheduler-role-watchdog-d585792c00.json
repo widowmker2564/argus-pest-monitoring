@@ -1,0 +1,34 @@
+{
+    "RoleName": "Amazon_EventBridge_Scheduler_LAMBDA_d585792c00",
+    "Path": "/service-role/",
+    "Arn": "arn:aws:iam::366356442579:role/service-role/Amazon_EventBridge_Scheduler_LAMBDA_d585792c00",
+    "MaxSessionDuration": 3600,
+    "AssumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": { "Service": "scheduler.amazonaws.com" },
+                "Action": "sts:AssumeRole",
+                "Condition": { "StringEquals": { "aws:SourceAccount": "366356442579" } }
+            }
+        ]
+    },
+    "AttachedManagedPolicyArn": "arn:aws:iam::366356442579:policy/service-role/Amazon-EventBridge-Scheduler-Execution-Policy-a7b845be-e882-43eb-a6a4-92cf4a3f1a80",
+    "InlinePolicies": [],
+    "PolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [ "lambda:InvokeFunction" ],
+                "Resource": [
+                    "arn:aws:lambda:us-east-1:366356442579:function:pest-model-watchdog:*",
+                    "arn:aws:lambda:us-east-1:366356442579:function:pest-model-watchdog"
+                ]
+            }
+        ]
+    },
+    "_classification": "PROD",
+    "_note": "Execution role for the PROD watchdog schedule. EventBridge Scheduler invokes Lambda by ASSUMING this role (unlike classic EventBridge rules, which use Lambda resource-based permissions). deploy.py must create an equivalent role trusting scheduler.amazonaws.com with aws:SourceAccount=<new account id>, and a lambda:InvokeFunction policy scoped to the new pest-model-watchdog function ARN (both bare and :* forms). PARAMETERIZE: account id (in ARN, trust condition, and policy resource), region, function ARN. Role/policy names carry random suffixes -> generate fresh names in deploy.py; do not hardcode d585792c00."
+}

@@ -1,0 +1,33 @@
+{
+    "Items": [
+        {
+            "migrated_at": {
+                "S": "2026-05-21T05:38:13Z"
+            },
+            "additional_recipients": {
+                "L": []
+            },
+            "recipient_email": {
+                "S": "rex2956550768@gmail.com"
+            },
+            "migrated_from": {
+                "S": "runzhe-system-config"
+            },
+            "email_enabled": {
+                "BOOL": true
+            },
+            "config_key": {
+                "S": "detection_settings"
+            },
+            "capture_interval": {
+                "N": "60"
+            },
+            "auto_capture": {
+                "BOOL": true
+            }
+        }
+    ],
+    "Count": 1,
+    "ScannedCount": 1,
+    "ConsumedCapacity": null
+}

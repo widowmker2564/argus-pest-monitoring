@@ -1,0 +1,37 @@
+{
+  "FunctionName": "pest-monitoring-api",
+  "classification": "PROD",
+  "Runtime": "python3.12",
+  "Handler": "lambda_function.lambda_handler",
+  "MemorySize": 256,
+  "Timeout": 30,
+  "Architectures": ["x86_64"],
+  "EphemeralStorage": 512,
+  "Role": "arn:aws:iam::366356442579:role/pest-monitoring-api-role",
+  "ReservedConcurrency": null,
+  "ProvisionedConcurrency": null,
+  "Environment": {
+    "SCHEDULE_EXECUTOR_ARN": "arn:aws:lambda:us-east-1:366356442579:function:pest-camera-scheduler",
+    "TABLE_CAMERAS": "pest-monitoring-cameras",
+    "S3_FRAMES_BUCKET": "frames-armyworm-366356442579",
+    "TABLE_SYSTEM_CONFIG": "pest-monitoring-system-config",
+    "TABLE_SCHEDULE_LOGS": "pest-monitoring-schedule-logs",
+    "S3_PROCESSED_BUCKET": "processed-images-armyworm-366356442579",
+    "TABLE_DETECTIONS": "pest-monitoring-detections"
+  },
+  "Layers": [],
+  "CodeSha256": "cMwnXDQbMZAUJnfhEmzIpDYs5xtjJ+aKnNYmbIhTTm4=",
+  "LocalCodeMirror": "C:\\FYP\\lambda\\pest-monitoring-api.py",
+  "Triggers": {
+    "ApiGatewayHttpApi": {
+      "ApiId": "zwpcbivmsj",
+      "Note": "AWS_PROXY integration on all pest-monitoring-api routes. This function also DYNAMICALLY creates EventBridge rules named pest-sched-{camera_id}-{action} at runtime (see /schedule route) that invoke pest-camera-scheduler."
+    }
+  },
+  "ResourcePolicy": {
+    "Sid": "apigateway-invoke-zwpcbivmsj",
+    "Principal": "apigateway.amazonaws.com",
+    "Action": "lambda:InvokeFunction",
+    "Condition_SourceArn": "arn:aws:execute-api:us-east-1:366356442579:zwpcbivmsj/*"
+  }
+}
