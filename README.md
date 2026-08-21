@@ -23,6 +23,7 @@ Built as a final-year ECE diploma project at Ngee Ann Polytechnic, April–Augus
 | Know why it is built this way | [`docs/DECISIONS.md`](docs/DECISIONS.md) |
 | Avoid problems already solved | [`docs/PITFALLS.md`](docs/PITFALLS.md) |
 | Get a guided tour of the code | [`docs/code_walkthrough.md`](docs/code_walkthrough.md) |
+| Know which credentials you need | [`docs/CREDENTIALS.md`](docs/CREDENTIALS.md) |
 | Rebuild the whole thing | [`reports/manual/08_reproduction_runbook.md`](reports/manual/08_reproduction_runbook.md) |
 | Use an AI coding agent here | [`AGENTS.md`](AGENTS.md) |
 

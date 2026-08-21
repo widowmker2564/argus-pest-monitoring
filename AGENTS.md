@@ -51,6 +51,7 @@ not code, and only exist in these files.
 | [`docs/model_ladder.md`](docs/model_ladder.md) | Every model version v3 → v9r and what each one proved. |
 | [`reports/manual/`](reports/manual/) | The full technical manual, 10 chapters. The deepest reference in the repo. |
 | [`docs/code_walkthrough.md`](docs/code_walkthrough.md) | A guided tour of the live code, subsystem by subsystem, with verified `file:line` anchors and the live configuration values. |
+| [`docs/CREDENTIALS.md`](docs/CREDENTIALS.md) | Every credential the system needs and where it is consumed. Values are NOT here and must never be added. |
 
 **Precedence when two files disagree:** `docs/state.md` wins, then
 `reports/manual/`, then everything else. The code is ground truth over all of
